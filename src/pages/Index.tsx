@@ -48,48 +48,10 @@ const Index = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<"public" | "admin">("public");
   const [isLogin, setIsLogin] = useState(true);
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: "1",
-      title: "Visit Product Website",
-      description: "Explore our partner website and learn about their latest products",
-      url: "https://example.com",
-      reward: 2,
-      type: "link"
-    },
-    {
-      id: "2",
-      title: "Read Article",
-      description: "Read this informative article about digital marketing trends",
-      content: "Digital marketing is evolving rapidly with new technologies and consumer behaviors. Social media platforms continue to be dominant channels for brand engagement, while AI-powered personalization is becoming increasingly important for targeting the right audience. Understanding these trends is crucial for any modern business looking to stay competitive in the digital landscape.",
-      reward: 3,
-      type: "text"
-    }
-  ]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   
-  const [withdrawalRequests, setWithdrawalRequests] = useState<WithdrawalRequest[]>([
-    {
-      id: "1",
-      userEmail: "user@example.com",
-      amount: 75,
-      upiId: "user@paytm",
-      requestDate: "2024-01-15",
-      status: "pending"
-    }
-  ]);
-
-  const [users, setUsers] = useState<UserData[]>([
-    {
-      id: "1",
-      email: "user@example.com",
-      upiId: "user@paytm",
-      joinDate: "2024-01-10",
-      totalEarnings: 125,
-      tasksCompleted: 8,
-      isActive: true,
-      lastActive: "2024-01-15T10:30:00Z"
-    }
-  ]);
+  const [withdrawalRequests, setWithdrawalRequests] = useState<WithdrawalRequest[]>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
 
   const { toast } = useToast();
 
