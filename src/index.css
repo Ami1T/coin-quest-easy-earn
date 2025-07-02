@@ -8,35 +8,60 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Easy Earn Design System - Trust & Reward Theme */
+    --background: 220 15% 97%;
+    --foreground: 220 15% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 220 15% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Deep Professional Blue */
+    --primary: 220 70% 25%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Light Blue */
+    --secondary: 220 25% 90%;
+    --secondary-foreground: 220 70% 25%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted - Subtle Background */
+    --muted: 220 15% 95%;
+    --muted-foreground: 220 15% 50%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Golden Reward Color */
+    --accent: 35 90% 50%;
+    --accent-foreground: 220 70% 25%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Success - Green for earnings */
+    --success: 120 50% 45%;
+    --success-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Warning - Orange for pending */
+    --warning: 25 90% 55%;
+    --warning-foreground: 220 70% 25%;
 
-    --radius: 0.5rem;
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 15% 85%;
+    --input: 220 15% 90%;
+    --ring: 220 70% 25%;
+
+    /* Custom Easy Earn Variables */
+    --coin-gold: 45 95% 50%;
+    --coin-gold-dark: 35 85% 40%;
+    --trust-blue: 220 70% 25%;
+    --trust-blue-light: 220 50% 85%;
+    --earning-green: 120 50% 45%;
+    --gradient-primary: linear-gradient(135deg, hsl(var(--trust-blue)), hsl(220 60% 35%));
+    --gradient-coin: linear-gradient(135deg, hsl(var(--coin-gold)), hsl(var(--coin-gold-dark)));
+    --gradient-success: linear-gradient(135deg, hsl(var(--earning-green)), hsl(120 40% 35%));
+    --shadow-card: 0 4px 12px hsl(220 15% 15% / 0.1);
+    --shadow-coin: 0 8px 20px hsl(45 95% 50% / 0.3);
+
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 

@@ -52,6 +52,24 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				/* Easy Earn Custom Colors */
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
+				},
+				coin: {
+					DEFAULT: 'hsl(var(--coin-gold))',
+					dark: 'hsl(var(--coin-gold-dark))'
+				},
+				trust: {
+					DEFAULT: 'hsl(var(--trust-blue))',
+					light: 'hsl(var(--trust-blue-light))'
+				},
+				earning: 'hsl(var(--earning-green))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -88,7 +106,18 @@ export default {
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'coin-spin': 'spin 3s linear infinite',
+				'pulse-glow': 'pulse 2s ease-in-out infinite'
+			},
+			backgroundImage: {
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-coin': 'var(--gradient-coin)',
+				'gradient-success': 'var(--gradient-success)'
+			},
+			boxShadow: {
+				'card': 'var(--shadow-card)',
+				'coin': 'var(--shadow-coin)'
 			}
 		}
 	},
