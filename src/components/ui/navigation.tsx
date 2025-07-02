@@ -1,41 +1,40 @@
 import { Button } from "./button";
 import { cn } from "@/lib/utils";
-import { Sparkles } from "lucide-react";
+import { Home, Wallet, Users } from "lucide-react";
 
 interface NavigationProps {
-  activeTab: "public" | "admin";
-  onTabChange: (tab: "public" | "admin") => void;
+  activeTab: "home" | "wallet" | "refer";
+  onTabChange: (tab: "home" | "wallet" | "refer") => void;
   className?: string;
 }
 
 export function Navigation({ activeTab, onTabChange, className }: NavigationProps) {
   return (
-    <div className={cn("space-y-4", className)}>
-      <nav className="flex bg-card rounded-lg p-1 shadow-card">
-        <Button
-          variant={activeTab === "public" ? "default" : "ghost"}
-          onClick={() => onTabChange("public")}
-          className="flex-1 transition-all duration-200"
-        >
-          Public
-        </Button>
-        <Button
-          variant={activeTab === "admin" ? "default" : "ghost"}
-          onClick={() => onTabChange("admin")}
-          className="flex-1 transition-all duration-200"
-        >
-          Admin
-        </Button>
-      </nav>
-      
-      <Button 
-        variant="outline" 
-        className="w-full border-dashed border-2 hover:bg-muted/50 transition-all duration-200"
-        disabled
+    <nav className={cn("flex bg-card rounded-lg p-1 shadow-card", className)}>
+      <Button
+        variant={activeTab === "home" ? "default" : "ghost"}
+        onClick={() => onTabChange("home")}
+        className="flex-1 transition-all duration-200"
       >
-        <Sparkles className="w-4 h-4 mr-2" />
-        Future Options (Coming Soon)
+        <Home className="w-4 h-4 mr-2" />
+        Home
       </Button>
-    </div>
+      <Button
+        variant={activeTab === "wallet" ? "default" : "ghost"}
+        onClick={() => onTabChange("wallet")}
+        className="flex-1 transition-all duration-200"
+      >
+        <Wallet className="w-4 h-4 mr-2" />
+        Wallet
+      </Button>
+      <Button
+        variant={activeTab === "refer" ? "default" : "ghost"}
+        onClick={() => onTabChange("refer")}
+        className="flex-1 transition-all duration-200"
+      >
+        <Users className="w-4 h-4 mr-2" />
+        Refer
+      </Button>
+    </nav>
   );
 }

@@ -3,7 +3,14 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { PublicDashboard } from "./PublicDashboard";
 import { AdminPanel } from "./AdminPanel";
 import { Navigation } from "@/components/ui/navigation";
-import { Coins, Shield } from "lucide-react";
+import { LoginNavigation } from "@/components/ui/login-navigation";
+import { WalletCard } from "@/components/dashboard/WalletCard";
+import { TaskCard } from "@/components/dashboard/TaskCard";
+import { ReferralSection } from "@/components/dashboard/ReferralSection";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Coins, Shield, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 // Mock data - in a real app, this would come from a backend
@@ -47,8 +54,26 @@ interface UserData {
 const Index = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<"public" | "admin">("public");
+  const [userNavTab, setUserNavTab] = useState<"home" | "wallet" | "refer">("home");
   const [isLogin, setIsLogin] = useState(true);
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([
+    {
+      id: "1",
+      title: "Visit Product Website",
+      description: "Explore our partner website and learn about their latest products",
+      url: "https://example.com",
+      reward: 2,
+      type: "link"
+    },
+    {
+      id: "2",
+      title: "Read Article",
+      description: "Read this informative article about digital marketing trends",
+      content: "Digital marketing is evolving rapidly with new technologies and consumer behaviors.",
+      reward: 3,
+      type: "text"
+    }
+  ]);
   
   const [withdrawalRequests, setWithdrawalRequests] = useState<WithdrawalRequest[]>([]);
   const [users, setUsers] = useState<UserData[]>([]);
@@ -151,15 +176,107 @@ const Index = () => {
         />
       );
     } else {
+      // Public User Dashboard with new navigation
       return (
-        <PublicDashboard
-          user={currentUser}
-          tasks={tasks}
-          onLogout={handleLogout}
-          onTaskComplete={handleTaskComplete}
-          onUpiUpdate={handleUpiUpdate}
-          onWithdraw={handleWithdraw}
-        />
+        <div className="min-h-screen bg-background">
+          {/* Header */}
+          <header className="bg-gradient-primary text-white py-6">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                    <Coins className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h1 className="text-2xl font-bold">Easy Earn</h1>
+                    <p className="text-sm text-primary-foreground/80">Welcome, {currentUser.email}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                    <Coins className="w-4 h-4 mr-1" />
+                    ₹{currentUser.balance}
+                  </Badge>
+                  <Button variant="outline" onClick={handleLogout} className="border-white/20 text-white hover:bg-white/10">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* Navigation Bar */}
+          <div className="container mx-auto px-4 py-4">
+            <Navigation 
+              activeTab={userNavTab} 
+              onTabChange={setUserNavTab}
+              className="max-w-md mx-auto"
+            />
+          </div>
+
+          {/* Content based on active tab */}
+          <div className="container mx-auto px-4 pb-8">
+            {userNavTab === "home" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold">Available Tasks</h2>
+                    <p className="text-muted-foreground">Complete tasks to earn money</p>
+                  </div>
+                  <Badge variant="outline" className="text-success border-success">
+                    {tasks.length} tasks available
+                  </Badge>
+                </div>
+
+                {tasks.length === 0 ? (
+                  <Card className="shadow-card">
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                      <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                        <Coins className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">No Tasks Available</h3>
+                      <p className="text-muted-foreground text-center">
+                        Check back later for new earning opportunities!
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid gap-6 max-w-4xl mx-auto">
+                    {tasks.map((task) => (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        onTaskComplete={handleTaskComplete}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {userNavTab === "wallet" && (
+              <div className="max-w-md mx-auto">
+                <WalletCard
+                  balance={currentUser.balance}
+                  upiId={currentUser.upiId}
+                  onUpiUpdate={handleUpiUpdate}
+                  onWithdraw={handleWithdraw}
+                />
+              </div>
+            )}
+
+            {userNavTab === "refer" && (
+              <div className="max-w-4xl mx-auto">
+                <ReferralSection
+                  userEmail={currentUser.email}
+                  referralCount={0}
+                  referralEarnings={0}
+                />
+              </div>
+            )}
+          </div>
+        </div>
       );
     }
   }
@@ -189,7 +306,7 @@ const Index = () => {
           <div className="text-center space-y-4">
             <h2 className="text-2xl font-bold">Welcome to Easy Earn</h2>
             <p className="text-muted-foreground">Choose your access type to continue</p>
-            <Navigation 
+            <LoginNavigation 
               activeTab={activeTab} 
               onTabChange={setActiveTab}
               className="max-w-xs mx-auto"
