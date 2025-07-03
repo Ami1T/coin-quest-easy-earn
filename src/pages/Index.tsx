@@ -56,38 +56,73 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState<"public" | "admin">("public");
   const [userNavTab, setUserNavTab] = useState<"home" | "wallet" | "refer">("home");
   const [isLogin, setIsLogin] = useState(true);
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: "1",
-      title: "Visit Product Website",
-      description: "Explore our partner website and learn about their latest products",
-      url: "https://example.com",
-      reward: 2,
-      type: "link"
-    },
-    {
-      id: "2",
-      title: "Read Article",
-      description: "Read this informative article about digital marketing trends",
-      content: "Digital marketing is evolving rapidly with new technologies and consumer behaviors.",
-      reward: 3,
-      type: "text"
-    }
-  ]);
-  
-  const [withdrawalRequests, setWithdrawalRequests] = useState<WithdrawalRequest[]>([]);
-  const [users, setUsers] = useState<UserData[]>([]);
+  // Load data from localStorage
+  const loadFromStorage = () => {
+    const storedTasks = localStorage.getItem('easyEarnTasks');
+    const storedUsers = localStorage.getItem('easyEarnUsers');
+    const storedWithdrawals = localStorage.getItem('easyEarnWithdrawals');
+    
+    return {
+      tasks: storedTasks ? JSON.parse(storedTasks) : [],
+      users: storedUsers ? JSON.parse(storedUsers) : [],
+      withdrawals: storedWithdrawals ? JSON.parse(storedWithdrawals) : []
+    };
+  };
+
+  const savedData = loadFromStorage();
+  const [tasks, setTasks] = useState<Task[]>(savedData.tasks);
+  const [withdrawalRequests, setWithdrawalRequests] = useState<WithdrawalRequest[]>(savedData.withdrawals);
+  const [users, setUsers] = useState<UserData[]>(savedData.users);
+
+  // Save to localStorage whenever data changes
+  const saveToStorage = (tasksData: Task[], usersData: UserData[], withdrawalsData: WithdrawalRequest[]) => {
+    localStorage.setItem('easyEarnTasks', JSON.stringify(tasksData));
+    localStorage.setItem('easyEarnUsers', JSON.stringify(usersData));
+    localStorage.setItem('easyEarnWithdrawals', JSON.stringify(withdrawalsData));
+  };
 
   const { toast } = useToast();
 
   const handleLogin = (email: string, password: string, userType: "public" | "admin") => {
-    // Simulate login - in real app, this would validate against backend
-    const newUser: User = {
-      email,
-      balance: userType === "admin" ? 0 : 45, // Demo balance for public users
-      upiId: userType === "admin" ? "" : "user@paytm",
-      type: userType
-    };
+    // Check if user exists in localStorage
+    const existingUser = users.find(user => user.email === email);
+    
+    let newUser: User;
+    if (existingUser) {
+      // Returning user - load their data
+      newUser = {
+        email,
+        balance: existingUser.totalEarnings,
+        upiId: existingUser.upiId,
+        type: userType
+      };
+    } else {
+      // New user - start with zero balance
+      newUser = {
+        email,
+        balance: 0,
+        upiId: "",
+        type: userType
+      };
+      
+      // Add new user to database if public user
+      if (userType === "public") {
+        const newUserData: UserData = {
+          id: Date.now().toString(),
+          email,
+          upiId: "",
+          joinDate: new Date().toISOString().split('T')[0],
+          totalEarnings: 0,
+          tasksCompleted: 0,
+          isActive: true,
+          lastActive: new Date().toISOString()
+        };
+        
+        const updatedUsers = [...users, newUserData];
+        setUsers(updatedUsers);
+        saveToStorage(tasks, updatedUsers, withdrawalRequests);
+      }
+    }
     
     setCurrentUser(newUser);
     
@@ -107,13 +142,32 @@ const Index = () => {
 
   const handleTaskComplete = (taskId: string, reward: number) => {
     if (currentUser) {
-      setCurrentUser(prev => prev ? { ...prev, balance: prev.balance + reward } : null);
+      const newBalance = currentUser.balance + reward;
+      setCurrentUser(prev => prev ? { ...prev, balance: newBalance } : null);
+      
+      // Update user data in localStorage
+      const updatedUsers = users.map(user => 
+        user.email === currentUser.email 
+          ? { ...user, totalEarnings: newBalance, tasksCompleted: user.tasksCompleted + 1, lastActive: new Date().toISOString() }
+          : user
+      );
+      setUsers(updatedUsers);
+      saveToStorage(tasks, updatedUsers, withdrawalRequests);
     }
   };
 
   const handleUpiUpdate = (upiId: string) => {
     if (currentUser) {
       setCurrentUser(prev => prev ? { ...prev, upiId } : null);
+      
+      // Update user data in localStorage
+      const updatedUsers = users.map(user => 
+        user.email === currentUser.email 
+          ? { ...user, upiId }
+          : user
+      );
+      setUsers(updatedUsers);
+      saveToStorage(tasks, updatedUsers, withdrawalRequests);
     }
   };
 
@@ -128,8 +182,18 @@ const Index = () => {
         status: "pending"
       };
       
-      setWithdrawalRequests(prev => [newRequest, ...prev]);
+      const updatedWithdrawals = [newRequest, ...withdrawalRequests];
+      setWithdrawalRequests(updatedWithdrawals);
       setCurrentUser(prev => prev ? { ...prev, balance: prev.balance - amount } : null);
+      
+      // Update user balance in localStorage
+      const updatedUsers = users.map(user => 
+        user.email === currentUser.email 
+          ? { ...user, totalEarnings: currentUser.balance - amount }
+          : user
+      );
+      setUsers(updatedUsers);
+      saveToStorage(tasks, updatedUsers, updatedWithdrawals);
     }
   };
 
@@ -138,13 +202,32 @@ const Index = () => {
       ...task,
       id: Date.now().toString()
     };
-    setTasks(prev => [newTask, ...prev]);
+    const updatedTasks = [newTask, ...tasks];
+    setTasks(updatedTasks);
+    saveToStorage(updatedTasks, users, withdrawalRequests);
+  };
+
+  const handleEditTask = (taskId: string, updatedTask: Omit<Task, "id">) => {
+    const updatedTasks = tasks.map(task => 
+      task.id === taskId ? { ...updatedTask, id: taskId } : task
+    );
+    setTasks(updatedTasks);
+    saveToStorage(updatedTasks, users, withdrawalRequests);
+  };
+
+  const handleDeleteTask = (taskId: string) => {
+    const updatedTasks = tasks.filter(task => task.id !== taskId);
+    setTasks(updatedTasks);
+    saveToStorage(updatedTasks, users, withdrawalRequests);
   };
 
   const handleApproveWithdrawal = (id: string) => {
-    setWithdrawalRequests(prev =>
-      prev.map(req => req.id === id ? { ...req, status: "approved" as const } : req)
+    const updatedWithdrawals = withdrawalRequests.map(req => 
+      req.id === id ? { ...req, status: "approved" as const } : req
     );
+    setWithdrawalRequests(updatedWithdrawals);
+    saveToStorage(tasks, users, updatedWithdrawals);
+    
     toast({
       title: "Withdrawal Approved",
       description: "Payment has been processed successfully",
@@ -152,9 +235,12 @@ const Index = () => {
   };
 
   const handleRejectWithdrawal = (id: string) => {
-    setWithdrawalRequests(prev =>
-      prev.map(req => req.id === id ? { ...req, status: "rejected" as const } : req)
+    const updatedWithdrawals = withdrawalRequests.map(req => 
+      req.id === id ? { ...req, status: "rejected" as const } : req
     );
+    setWithdrawalRequests(updatedWithdrawals);
+    saveToStorage(tasks, users, updatedWithdrawals);
+    
     toast({
       title: "Withdrawal Rejected",
       description: "Payment request has been declined",
@@ -169,6 +255,9 @@ const Index = () => {
         <AdminPanel
           onLogout={handleLogout}
           onAddTask={handleAddTask}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+          tasks={tasks}
           withdrawalRequests={withdrawalRequests}
           onApproveWithdrawal={handleApproveWithdrawal}
           onRejectWithdrawal={handleRejectWithdrawal}

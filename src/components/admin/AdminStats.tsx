@@ -4,12 +4,12 @@ import { Users, TrendingUp, DollarSign, Activity } from "lucide-react";
 
 interface AdminStatsProps {
   activeUsers: number;
-  monthlyTraffic: number;
+  totalTasks: number;
   totalTransactions: number;
   totalWithdrawals: number;
 }
 
-export function AdminStats({ activeUsers, monthlyTraffic, totalTransactions, totalWithdrawals }: AdminStatsProps) {
+export function AdminStats({ activeUsers, totalTasks, totalTransactions, totalWithdrawals }: AdminStatsProps) {
   const stats = [
     {
       title: "Active Users",
@@ -17,15 +17,15 @@ export function AdminStats({ activeUsers, monthlyTraffic, totalTransactions, tot
       description: "Currently online",
       icon: Users,
       color: "bg-gradient-primary",
-      trend: "+12% from last week"
+      trend: `${activeUsers} users`
     },
     {
-      title: "Monthly Traffic",
-      value: monthlyTraffic,
-      description: "Total visitors this month",
+      title: "Total Tasks",
+      value: totalTasks,
+      description: "Available tasks",
       icon: TrendingUp,
       color: "bg-gradient-success",
-      trend: "+25% from last month"
+      trend: "Real-time data"
     },
     {
       title: "Total Transactions",

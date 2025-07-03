@@ -6,6 +6,7 @@ import { AdminStats } from "@/components/admin/AdminStats";
 import { PaymentsSection } from "@/components/admin/PaymentsSection";
 import { UserDataSection } from "@/components/admin/UserDataSection";
 import { UploadSection } from "@/components/admin/UploadSection";
+import { TaskManagement } from "@/components/admin/TaskManagement";
 import { Badge } from "@/components/ui/badge";
 import { LogOut, Shield, TrendingUp, Users, DollarSign, Upload } from "lucide-react";
 
@@ -42,6 +43,9 @@ interface UserData {
 interface AdminPanelProps {
   onLogout: () => void;
   onAddTask: (task: Omit<Task, "id">) => void;
+  onEditTask: (taskId: string, updatedTask: Omit<Task, "id">) => void;
+  onDeleteTask: (taskId: string) => void;
+  tasks: Task[];
   withdrawalRequests: WithdrawalRequest[];
   onApproveWithdrawal: (id: string) => void;
   onRejectWithdrawal: (id: string) => void;
@@ -51,6 +55,9 @@ interface AdminPanelProps {
 export function AdminPanel({ 
   onLogout, 
   onAddTask, 
+  onEditTask,
+  onDeleteTask,
+  tasks,
   withdrawalRequests, 
   onApproveWithdrawal, 
   onRejectWithdrawal,
@@ -58,10 +65,10 @@ export function AdminPanel({
 }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Mock stats - in real app, these would be calculated from actual data
+  // Real-time stats calculated from actual data
   const stats = {
     activeUsers: users.filter(user => user.isActive).length,
-    monthlyTraffic: 2547,
+    totalTasks: tasks.length,
     totalTransactions: users.reduce((sum, user) => sum + user.tasksCompleted, 0),
     totalWithdrawals: withdrawalRequests
       .filter(req => req.status === "approved")
@@ -135,7 +142,7 @@ export function AdminPanel({
             </div>
             <AdminStats
               activeUsers={stats.activeUsers}
-              monthlyTraffic={stats.monthlyTraffic}
+              totalTasks={stats.totalTasks}
               totalTransactions={stats.totalTransactions}
               totalWithdrawals={stats.totalWithdrawals}
             />
@@ -196,6 +203,11 @@ export function AdminPanel({
                 <p className="text-muted-foreground">Upload new tasks and content for users</p>
               </div>
               <UploadSection onAddTask={onAddTask} />
+              <TaskManagement 
+                tasks={tasks}
+                onEditTask={onEditTask}
+                onDeleteTask={onDeleteTask}
+              />
             </div>
           </TabsContent>
         </Tabs>
