@@ -7,6 +7,7 @@ import { LoginNavigation } from "@/components/ui/login-navigation";
 import { WalletCard } from "@/components/dashboard/WalletCard";
 import { TaskCard } from "@/components/dashboard/TaskCard";
 import { ReferralSection } from "@/components/dashboard/ReferralSection";
+import { NotificationModal } from "@/components/ui/NotificationModal";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +52,13 @@ interface UserData {
   lastActive: string;
 }
 
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  createdAt: string;
+}
+
 const Index = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<"public" | "admin">("public");
@@ -61,11 +69,15 @@ const Index = () => {
     const storedTasks = localStorage.getItem('easyEarnTasks');
     const storedUsers = localStorage.getItem('easyEarnUsers');
     const storedWithdrawals = localStorage.getItem('easyEarnWithdrawals');
+    const storedNotifications = localStorage.getItem('easyEarnNotifications');
+    const storedWithdrawalAmount = localStorage.getItem('easyEarnWithdrawalAmount');
     
     return {
       tasks: storedTasks ? JSON.parse(storedTasks) : [],
       users: storedUsers ? JSON.parse(storedUsers) : [],
-      withdrawals: storedWithdrawals ? JSON.parse(storedWithdrawals) : []
+      withdrawals: storedWithdrawals ? JSON.parse(storedWithdrawals) : [],
+      notifications: storedNotifications ? JSON.parse(storedNotifications) : [],
+      withdrawalAmount: storedWithdrawalAmount ? parseInt(storedWithdrawalAmount) : 50
     };
   };
 
@@ -73,6 +85,9 @@ const Index = () => {
   const [tasks, setTasks] = useState<Task[]>(savedData.tasks);
   const [withdrawalRequests, setWithdrawalRequests] = useState<WithdrawalRequest[]>(savedData.withdrawals);
   const [users, setUsers] = useState<UserData[]>(savedData.users);
+  const [notifications, setNotifications] = useState<Notification[]>(savedData.notifications);
+  const [withdrawalAmount, setWithdrawalAmount] = useState<number>(savedData.withdrawalAmount);
+  const [dismissedNotifications, setDismissedNotifications] = useState<string[]>([]);
 
   // Save to localStorage whenever data changes
   const saveToStorage = (tasksData: Task[], usersData: UserData[], withdrawalsData: WithdrawalRequest[]) => {
@@ -248,6 +263,31 @@ const Index = () => {
     });
   };
 
+  const handleWithdrawalAmountChange = (amount: number) => {
+    setWithdrawalAmount(amount);
+    localStorage.setItem('easyEarnWithdrawalAmount', amount.toString());
+  };
+
+  const handleAddNotification = (notification: Omit<Notification, "id">) => {
+    const newNotification: Notification = {
+      ...notification,
+      id: Date.now().toString()
+    };
+    const updatedNotifications = [newNotification, ...notifications];
+    setNotifications(updatedNotifications);
+    localStorage.setItem('easyEarnNotifications', JSON.stringify(updatedNotifications));
+  };
+
+  const handleDeleteNotification = (id: string) => {
+    const updatedNotifications = notifications.filter(n => n.id !== id);
+    setNotifications(updatedNotifications);
+    localStorage.setItem('easyEarnNotifications', JSON.stringify(updatedNotifications));
+  };
+
+  const handleDismissNotification = (id: string) => {
+    setDismissedNotifications(prev => [...prev, id]);
+  };
+
   // If user is logged in, show appropriate dashboard
   if (currentUser) {
     if (currentUser.type === "admin") {
@@ -262,6 +302,11 @@ const Index = () => {
           onApproveWithdrawal={handleApproveWithdrawal}
           onRejectWithdrawal={handleRejectWithdrawal}
           users={users}
+          withdrawalAmount={withdrawalAmount}
+          notifications={notifications}
+          onWithdrawalAmountChange={handleWithdrawalAmountChange}
+          onAddNotification={handleAddNotification}
+          onDeleteNotification={handleDeleteNotification}
         />
       );
     } else {
@@ -303,6 +348,12 @@ const Index = () => {
               className="max-w-md mx-auto"
             />
           </div>
+
+          {/* Notification Modal */}
+          <NotificationModal
+            notifications={notifications.filter(n => !dismissedNotifications.includes(n.id))}
+            onDismiss={handleDismissNotification}
+          />
 
           {/* Content based on active tab */}
           <div className="container mx-auto px-4 pb-8">

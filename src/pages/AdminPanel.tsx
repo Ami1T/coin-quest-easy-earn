@@ -7,8 +7,9 @@ import { PaymentsSection } from "@/components/admin/PaymentsSection";
 import { UserDataSection } from "@/components/admin/UserDataSection";
 import { UploadSection } from "@/components/admin/UploadSection";
 import { TaskManagement } from "@/components/admin/TaskManagement";
+import { SettingsSection } from "@/components/admin/SettingsSection";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Shield, TrendingUp, Users, DollarSign, Upload } from "lucide-react";
+import { LogOut, Shield, TrendingUp, Users, DollarSign, Upload, Settings } from "lucide-react";
 
 interface Task {
   id: string;
@@ -40,6 +41,13 @@ interface UserData {
   lastActive: string;
 }
 
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  createdAt: string;
+}
+
 interface AdminPanelProps {
   onLogout: () => void;
   onAddTask: (task: Omit<Task, "id">) => void;
@@ -50,6 +58,11 @@ interface AdminPanelProps {
   onApproveWithdrawal: (id: string) => void;
   onRejectWithdrawal: (id: string) => void;
   users: UserData[];
+  withdrawalAmount: number;
+  notifications: Notification[];
+  onWithdrawalAmountChange: (amount: number) => void;
+  onAddNotification: (notification: Omit<Notification, "id">) => void;
+  onDeleteNotification: (id: string) => void;
 }
 
 export function AdminPanel({ 
@@ -61,7 +74,12 @@ export function AdminPanel({
   withdrawalRequests, 
   onApproveWithdrawal, 
   onRejectWithdrawal,
-  users 
+  users,
+  withdrawalAmount,
+  notifications,
+  onWithdrawalAmountChange,
+  onAddNotification,
+  onDeleteNotification
 }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -111,7 +129,7 @@ export function AdminPanel({
 
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
               Overview
@@ -132,6 +150,10 @@ export function AdminPanel({
             <TabsTrigger value="upload" className="flex items-center gap-2">
               <Upload className="w-4 h-4" />
               Upload
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Settings
             </TabsTrigger>
           </TabsList>
 
@@ -207,6 +229,22 @@ export function AdminPanel({
                 tasks={tasks}
                 onEditTask={onEditTask}
                 onDeleteTask={onDeleteTask}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Settings</h2>
+                <p className="text-muted-foreground">Configure withdrawal amounts and manage notifications</p>
+              </div>
+              <SettingsSection
+                withdrawalAmount={withdrawalAmount}
+                notifications={notifications}
+                onWithdrawalAmountChange={onWithdrawalAmountChange}
+                onAddNotification={onAddNotification}
+                onDeleteNotification={onDeleteNotification}
               />
             </div>
           </TabsContent>
