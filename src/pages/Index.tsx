@@ -48,6 +48,7 @@ interface UserData {
   joinDate: string;
   totalEarnings: number;
   tasksCompleted: number;
+  completedTaskIds: string[];
   isActive: boolean;
   lastActive: string;
 }
@@ -129,6 +130,7 @@ const Index = () => {
           joinDate: new Date().toISOString().split('T')[0],
           totalEarnings: 0,
           tasksCompleted: 0,
+          completedTaskIds: [],
           isActive: true,
           lastActive: new Date().toISOString()
         };
@@ -160,15 +162,28 @@ const Index = () => {
       const newBalance = currentUser.balance + reward;
       setCurrentUser(prev => prev ? { ...prev, balance: newBalance } : null);
       
-      // Update user data in localStorage
+      // Update user data in localStorage with completed task
       const updatedUsers = users.map(user => 
         user.email === currentUser.email 
-          ? { ...user, totalEarnings: newBalance, tasksCompleted: user.tasksCompleted + 1, lastActive: new Date().toISOString() }
+          ? { 
+              ...user, 
+              totalEarnings: newBalance, 
+              tasksCompleted: user.tasksCompleted + 1, 
+              completedTaskIds: [...(user.completedTaskIds || []), taskId],
+              lastActive: new Date().toISOString() 
+            }
           : user
       );
       setUsers(updatedUsers);
       saveToStorage(tasks, updatedUsers, withdrawalRequests);
     }
+  };
+
+  // Filter tasks to show only uncompleted ones for the current user
+  const getAvailableTasksForUser = (allTasks: Task[], userEmail: string) => {
+    const currentUserData = users.find(user => user.email === userEmail);
+    const completedTaskIds = currentUserData?.completedTaskIds || [];
+    return allTasks.filter(task => !completedTaskIds.includes(task.id));
   };
 
   const handleUpiUpdate = (upiId: string) => {
@@ -365,33 +380,38 @@ const Index = () => {
                     <p className="text-muted-foreground">Complete tasks to earn money</p>
                   </div>
                   <Badge variant="outline" className="text-success border-success">
-                    {tasks.length} tasks available
+                    {getAvailableTasksForUser(tasks, currentUser.email).length} tasks available
                   </Badge>
                 </div>
 
-                {tasks.length === 0 ? (
-                  <Card className="shadow-card">
-                    <CardContent className="flex flex-col items-center justify-center py-12">
-                      <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-                        <Coins className="w-8 h-8 text-muted-foreground" />
-                      </div>
-                      <h3 className="text-lg font-semibold mb-2">No Tasks Available</h3>
-                      <p className="text-muted-foreground text-center">
-                        Check back later for new earning opportunities!
-                      </p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="grid gap-6 max-w-4xl mx-auto">
-                    {tasks.map((task) => (
-                      <TaskCard
-                        key={task.id}
-                        task={task}
-                        onTaskComplete={handleTaskComplete}
-                      />
-                    ))}
-                  </div>
-                )}
+                {(() => {
+                  const availableTasks = getAvailableTasksForUser(tasks, currentUser.email);
+                  return availableTasks.length === 0 ? (
+                    <Card className="shadow-card">
+                      <CardContent className="flex flex-col items-center justify-center py-12">
+                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                          <Coins className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">No Tasks Available</h3>
+                        <p className="text-muted-foreground text-center">
+                          {tasks.length === 0 
+                            ? "Check back later for new earning opportunities!" 
+                            : "You've completed all available tasks! Check back later for new ones."}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="grid gap-6 max-w-4xl mx-auto">
+                      {availableTasks.map((task) => (
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          onTaskComplete={handleTaskComplete}
+                        />
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
             )}
 

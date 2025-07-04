@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +27,16 @@ export function TaskCard({ task, onTaskComplete }: TaskCardProps) {
   const [isCompleted, setIsCompleted] = useState(false);
   const { toast } = useToast();
 
+  const handleTaskCompletion = useCallback(() => {
+    setIsCompleted(true);
+    onTaskComplete(task.id, task.reward);
+    toast({
+      title: "Task Completed! 🎉",
+      description: `You earned ${task.reward} coins (₹${task.reward})`,
+    });
+    setIsActive(false);
+  }, [task.id, task.reward, onTaskComplete, toast]);
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
@@ -35,13 +45,7 @@ export function TaskCard({ task, onTaskComplete }: TaskCardProps) {
         setTimeSpent(prev => {
           const newTime = prev + 1;
           if (newTime >= 120 && !isCompleted) {
-            setIsCompleted(true);
-            onTaskComplete(task.id, task.reward);
-            toast({
-              title: "Task Completed! 🎉",
-              description: `You earned ${task.reward} coins (₹${task.reward})`,
-            });
-            setIsActive(false);
+            handleTaskCompletion();
           }
           return newTime;
         });
@@ -51,7 +55,7 @@ export function TaskCard({ task, onTaskComplete }: TaskCardProps) {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isActive, timeSpent, isCompleted, task.id, task.reward, onTaskComplete, toast]);
+  }, [isActive, timeSpent, isCompleted, handleTaskCompletion]);
 
   const handleStartTask = () => {
     if (task.type === "link" && task.url) {
