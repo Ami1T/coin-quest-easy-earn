@@ -1,0 +1,633 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Earn - Complete Tasks, Earn Money</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --background: 220 15% 97%;
+            --foreground: 220 15% 15%;
+            --card: 0 0% 100%;
+            --card-foreground: 220 15% 15%;
+            --primary: 220 70% 25%;
+            --primary-foreground: 0 0% 98%;
+            --secondary: 220 25% 90%;
+            --secondary-foreground: 220 70% 25%;
+            --muted: 220 15% 95%;
+            --muted-foreground: 220 15% 50%;
+            --accent: 35 90% 50%;
+            --accent-foreground: 220 70% 25%;
+            --success: 120 50% 45%;
+            --success-foreground: 0 0% 98%;
+            --border: 220 15% 85%;
+            --input: 220 15% 90%;
+            --radius: 0.75rem;
+        }
+        
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, hsl(220, 70%, 25%), hsl(220, 60%, 35%));
+        }
+        
+        .bg-gradient-coin {
+            background: linear-gradient(135deg, hsl(45, 95%, 50%), hsl(35, 85%, 40%));
+        }
+        
+        .shadow-card {
+            box-shadow: 0 4px 12px hsl(220 15% 15% / 0.1);
+        }
+        
+        .card {
+            background-color: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, hsl(220, 70%, 25%), hsl(220, 60%, 35%));
+            color: hsl(var(--primary-foreground));
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: hsl(var(--muted));
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, hsl(120, 50%, 45%), hsl(120, 40%, 35%));
+            transition: width 0.3s ease;
+        }
+        
+        .badge {
+            background: linear-gradient(135deg, hsl(45, 95%, 50%), hsl(35, 85%, 40%));
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 1rem;
+            box-shadow: var(--shadow-card);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback } = React;
+
+        // Toast Component
+        const Toast = ({ message, type = 'success', onClose }) => {
+            useEffect(() => {
+                const timer = setTimeout(() => {
+                    onClose();
+                }, 3000);
+                return () => clearTimeout(timer);
+            }, [onClose]);
+
+            return (
+                <div className="toast">
+                    <div className="font-semibold">{type === 'success' ? '🎉 ' : '⚠️ '}{message.title}</div>
+                    {message.description && <div className="text-sm text-gray-600 mt-1">{message.description}</div>}
+                </div>
+            );
+        };
+
+        // Task Card Component
+        const TaskCard = ({ task, onTaskComplete }) => {
+            const [isActive, setIsActive] = useState(false);
+            const [timeSpent, setTimeSpent] = useState(0);
+            const [isCompleted, setIsCompleted] = useState(false);
+
+            const handleTaskCompletion = useCallback(() => {
+                setIsCompleted(true);
+                onTaskComplete(task.id, task.reward);
+                setIsActive(false);
+            }, [task.id, task.reward, onTaskComplete]);
+
+            useEffect(() => {
+                let interval;
+                
+                if (isActive && timeSpent < 120 && !isCompleted) {
+                    interval = setInterval(() => {
+                        setTimeSpent(prev => {
+                            const newTime = prev + 1;
+                            if (newTime >= 120) {
+                                handleTaskCompletion();
+                            }
+                            return newTime;
+                        });
+                    }, 1000);
+                }
+
+                return () => {
+                    if (interval) clearInterval(interval);
+                };
+            }, [isActive, timeSpent, isCompleted, handleTaskCompletion]);
+
+            const handleStartTask = () => {
+                if (task.type === "link" && task.url) {
+                    window.open(task.url, '_blank');
+                    setIsActive(true);
+                }
+            };
+
+            const handleReadTask = () => {
+                setIsActive(true);
+            };
+
+            const progress = Math.min((timeSpent / 120) * 100, 100);
+            const remainingTime = Math.max(120 - timeSpent, 0);
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
+
+            return (
+                <div className={`card p-6 ${isActive ? 'ring-2 ring-blue-500' : ''} ${isCompleted ? 'bg-green-50' : ''}`}>
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 className="text-xl font-bold">{task.title}</h3>
+                            <p className="text-gray-600">{task.description}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="badge">+{task.reward} coins</span>
+                            {isCompleted && <span className="text-green-500">✓</span>}
+                        </div>
+                    </div>
+
+                    {task.type === "text" && task.content && (
+                        <div className="bg-gray-100 p-4 rounded-lg mb-4">
+                            <p className="text-sm">{task.content}</p>
+                        </div>
+                    )}
+
+                    {task.type === "link" && task.url && (
+                        <div className="bg-blue-50 p-3 rounded-lg mb-4">
+                            <span className="text-sm font-medium">🔗 {task.url}</span>
+                        </div>
+                    )}
+
+                    {isActive && !isCompleted && (
+                        <div className="mb-4">
+                            <div className="flex justify-between text-sm mb-2">
+                                <span>⏰ Time remaining</span>
+                                <span className="font-mono">{minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}</span>
+                            </div>
+                            <div className="progress-bar">
+                                <div className="progress-fill" style={{width: `${progress}%`}}></div>
+                            </div>
+                        </div>
+                    )}
+
+                    {!isCompleted && (
+                        <button 
+                            onClick={task.type === "link" ? handleStartTask : handleReadTask}
+                            disabled={isActive}
+                            className="btn-primary w-full"
+                        >
+                            {isActive ? 'Task in Progress...' : `Start Task - Earn ₹${task.reward}`}
+                        </button>
+                    )}
+
+                    {isCompleted && (
+                        <button disabled className="btn-primary w-full opacity-50">
+                            ✓ Task Completed - ₹{task.reward} Earned
+                        </button>
+                    )}
+                </div>
+            );
+        };
+
+        // Wallet Card Component
+        const WalletCard = ({ balance, upiId, onUpiUpdate, onWithdraw }) => {
+            const [inputUpiId, setInputUpiId] = useState(upiId);
+            const [showWithdraw, setShowWithdraw] = useState(false);
+
+            const handleUpiSubmit = (e) => {
+                e.preventDefault();
+                onUpiUpdate(inputUpiId);
+            };
+
+            const handleWithdraw = () => {
+                if (balance >= 50) {
+                    onWithdraw(balance);
+                    setShowWithdraw(false);
+                }
+            };
+
+            return (
+                <div className="card p-6">
+                    <h2 className="text-2xl font-bold mb-4">💰 Your Wallet</h2>
+                    
+                    <div className="bg-gradient-primary text-white p-6 rounded-lg mb-6">
+                        <div className="text-center">
+                            <div className="text-3xl font-bold">₹{balance}</div>
+                            <div className="text-sm opacity-80">Available Balance</div>
+                        </div>
+                    </div>
+
+                    <form onSubmit={handleUpiSubmit} className="mb-6">
+                        <label className="block text-sm font-medium mb-2">UPI ID</label>
+                        <input
+                            type="text"
+                            value={inputUpiId}
+                            onChange={(e) => setInputUpiId(e.target.value)}
+                            placeholder="yourname@upi"
+                            className="input mb-3"
+                        />
+                        <button type="submit" className="btn-primary w-full">
+                            Update UPI ID
+                        </button>
+                    </form>
+
+                    {balance >= 50 && upiId && (
+                        <button
+                            onClick={() => setShowWithdraw(true)}
+                            className="btn-primary w-full"
+                        >
+                            Withdraw ₹{balance}
+                        </button>
+                    )}
+
+                    {showWithdraw && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{zIndex: 1000}}>
+                            <div className="card p-6 max-w-sm w-full">
+                                <h3 className="text-xl font-bold mb-4">Confirm Withdrawal</h3>
+                                <p className="mb-4">Withdraw ₹{balance} to {upiId}?</p>
+                                <div className="flex gap-3">
+                                    <button onClick={handleWithdraw} className="btn-primary flex-1">
+                                        Confirm
+                                    </button>
+                                    <button onClick={() => setShowWithdraw(false)} className="btn-primary flex-1 opacity-50">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {balance < 50 && (
+                        <div className="text-center text-gray-500 text-sm">
+                            Minimum withdrawal amount: ₹50
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // Main App Component
+        const EasyEarnApp = () => {
+            const [currentUser, setCurrentUser] = useState(null);
+            const [activeTab, setActiveTab] = useState('home');
+            const [toasts, setToasts] = useState([]);
+            
+            // Sample tasks data
+            const [tasks] = useState([
+                {
+                    id: '1',
+                    title: 'Visit Website',
+                    description: 'Visit our partner website for 2 minutes',
+                    url: 'https://example.com',
+                    reward: 2,
+                    type: 'link'
+                },
+                {
+                    id: '2',
+                    title: 'Read Article',
+                    description: 'Read this interesting article',
+                    content: 'This is a sample article content. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                    reward: 2,
+                    type: 'text'
+                },
+                {
+                    id: '3',
+                    title: 'Survey Task',
+                    description: 'Complete a quick survey',
+                    url: 'https://forms.gle/example',
+                    reward: 3,
+                    type: 'link'
+                }
+            ]);
+
+            // Load user data from localStorage
+            useEffect(() => {
+                const savedUser = localStorage.getItem('easyEarnUser');
+                if (savedUser) {
+                    setCurrentUser(JSON.parse(savedUser));
+                }
+            }, []);
+
+            const showToast = (message) => {
+                const id = Date.now();
+                setToasts(prev => [...prev, { id, ...message }]);
+            };
+
+            const removeToast = (id) => {
+                setToasts(prev => prev.filter(toast => toast.id !== id));
+            };
+
+            const handleLogin = (email, password) => {
+                const user = {
+                    email,
+                    balance: 0,
+                    upiId: '',
+                    completedTasks: []
+                };
+                setCurrentUser(user);
+                localStorage.setItem('easyEarnUser', JSON.stringify(user));
+                showToast({
+                    title: 'Login Successful! 🎉',
+                    description: 'Welcome to Easy Earn'
+                });
+            };
+
+            const handleLogout = () => {
+                setCurrentUser(null);
+                localStorage.removeItem('easyEarnUser');
+                showToast({
+                    title: 'Logged Out',
+                    description: 'You have been successfully logged out'
+                });
+            };
+
+            const handleTaskComplete = (taskId, reward) => {
+                if (currentUser) {
+                    const updatedUser = {
+                        ...currentUser,
+                        balance: currentUser.balance + reward,
+                        completedTasks: [...(currentUser.completedTasks || []), taskId]
+                    };
+                    setCurrentUser(updatedUser);
+                    localStorage.setItem('easyEarnUser', JSON.stringify(updatedUser));
+                    showToast({
+                        title: 'Task Completed! 🎉',
+                        description: `You earned ${reward} coins (₹${reward})`
+                    });
+                }
+            };
+
+            const handleUpiUpdate = (upiId) => {
+                if (currentUser) {
+                    const updatedUser = { ...currentUser, upiId };
+                    setCurrentUser(updatedUser);
+                    localStorage.setItem('easyEarnUser', JSON.stringify(updatedUser));
+                    showToast({
+                        title: 'UPI ID Updated',
+                        description: 'Your UPI ID has been saved successfully'
+                    });
+                }
+            };
+
+            const handleWithdraw = (amount) => {
+                if (currentUser) {
+                    const updatedUser = { ...currentUser, balance: 0 };
+                    setCurrentUser(updatedUser);
+                    localStorage.setItem('easyEarnUser', JSON.stringify(updatedUser));
+                    showToast({
+                        title: 'Withdrawal Requested',
+                        description: `₹${amount} withdrawal request submitted`
+                    });
+                }
+            };
+
+            const getAvailableTasksForUser = () => {
+                if (!currentUser) return tasks;
+                const completedTaskIds = currentUser.completedTasks || [];
+                return tasks.filter(task => !completedTaskIds.includes(task.id));
+            };
+
+            // Login Form
+            const LoginForm = () => {
+                const [email, setEmail] = useState('');
+                const [password, setPassword] = useState('');
+
+                const handleSubmit = (e) => {
+                    e.preventDefault();
+                    if (email && password) {
+                        handleLogin(email, password);
+                    }
+                };
+
+                return (
+                    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+                        <div className="card p-8 max-w-md w-full">
+                            <div className="text-center mb-8">
+                                <h1 className="text-3xl font-bold text-blue-900 mb-2">💰 Easy Earn</h1>
+                                <p className="text-gray-600">Complete simple tasks and earn money instantly</p>
+                            </div>
+                            
+                            <form onSubmit={handleSubmit}>
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium mb-2">Email</label>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="input"
+                                        required
+                                    />
+                                </div>
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium mb-2">Password</label>
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="input"
+                                        required
+                                    />
+                                </div>
+                                <button type="submit" className="btn-primary w-full">
+                                    Login
+                                </button>
+                            </form>
+
+                            <div className="mt-8 space-y-4">
+                                <div className="bg-green-50 p-4 rounded-lg">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-2xl">💰</span>
+                                        <div>
+                                            <div className="font-semibold">Earn ₹2 per task</div>
+                                            <div className="text-sm text-gray-600">Complete simple 2-minute tasks</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="bg-blue-50 p-4 rounded-lg">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-2xl">🛡️</span>
+                                        <div>
+                                            <div className="font-semibold">Minimum withdrawal ₹50</div>
+                                            <div className="text-sm text-gray-600">Quick UPI payments</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            if (!currentUser) {
+                return <LoginForm />;
+            }
+
+            // Main Dashboard
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    {/* Header */}
+                    <header className="bg-gradient-primary text-white py-6">
+                        <div className="max-w-6xl mx-auto px-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-3xl">💰</span>
+                                    <div>
+                                        <h1 className="text-2xl font-bold">Easy Earn</h1>
+                                        <p className="text-sm opacity-80">Welcome, {currentUser.email}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <span className="badge">₹{currentUser.balance}</span>
+                                    <button onClick={handleLogout} className="text-white hover:opacity-80">
+                                        Logout
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Navigation */}
+                    <div className="max-w-6xl mx-auto px-4 py-4">
+                        <nav className="flex bg-white rounded-lg p-1 shadow-sm max-w-md mx-auto">
+                            <button
+                                onClick={() => setActiveTab('home')}
+                                className={`flex-1 py-2 px-4 rounded-md transition-all ${activeTab === 'home' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                            >
+                                🏠 Home
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('wallet')}
+                                className={`flex-1 py-2 px-4 rounded-md transition-all ${activeTab === 'wallet' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                            >
+                                💳 Wallet
+                            </button>
+                        </nav>
+                    </div>
+
+                    {/* Content */}
+                    <div className="max-w-6xl mx-auto px-4 pb-8">
+                        {activeTab === 'home' && (
+                            <div>
+                                <div className="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h2 className="text-2xl font-bold">Available Tasks</h2>
+                                        <p className="text-gray-600">Complete tasks to earn money</p>
+                                    </div>
+                                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                                        {getAvailableTasksForUser().length} tasks available
+                                    </span>
+                                </div>
+
+                                {getAvailableTasksForUser().length === 0 ? (
+                                    <div className="card p-12 text-center">
+                                        <div className="text-6xl mb-4">🎉</div>
+                                        <h3 className="text-xl font-semibold mb-2">All Tasks Completed!</h3>
+                                        <p className="text-gray-600">Check back later for new earning opportunities!</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid gap-6 max-w-4xl mx-auto">
+                                        {getAvailableTasksForUser().map((task) => (
+                                            <TaskCard
+                                                key={task.id}
+                                                task={task}
+                                                onTaskComplete={handleTaskComplete}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {activeTab === 'wallet' && (
+                            <div className="max-w-md mx-auto">
+                                <WalletCard
+                                    balance={currentUser.balance}
+                                    upiId={currentUser.upiId}
+                                    onUpiUpdate={handleUpiUpdate}
+                                    onWithdraw={handleWithdraw}
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Toast Container */}
+                    {toasts.map((toast) => (
+                        <Toast
+                            key={toast.id}
+                            message={toast}
+                            onClose={() => removeToast(toast.id)}
+                        />
+                    ))}
+                </div>
+            );
+        };
+
+        // Render the app
+        ReactDOM.render(<EasyEarnApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
