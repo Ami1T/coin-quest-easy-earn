@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,11 @@ export function WalletCard({ balance, upiId, onUpiUpdate, onWithdraw }: WalletCa
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const { toast } = useToast();
 
+  // Convert coins to rupees (100 coins = 1₹)
+  const balanceInRupees = balance / 100;
+  const minWithdrawalInCoins = 5000; // 50₹ = 5000 coins
+  const minWithdrawalInRupees = minWithdrawalInCoins / 100;
+
   const handleUpiUpdate = () => {
     if (!newUpiId.trim()) {
       toast({
@@ -35,28 +41,30 @@ export function WalletCard({ balance, upiId, onUpiUpdate, onWithdraw }: WalletCa
   };
 
   const handleWithdraw = () => {
-    const amount = parseFloat(withdrawAmount);
-    if (amount < 50) {
+    const amountInRupees = parseFloat(withdrawAmount);
+    const amountInCoins = amountInRupees * 100;
+    
+    if (amountInRupees < minWithdrawalInRupees) {
       toast({
         title: "Minimum Withdrawal",
-        description: "Minimum withdrawal amount is ₹50",
+        description: `Minimum withdrawal amount is ₹${minWithdrawalInRupees} (${minWithdrawalInCoins} coins)`,
         variant: "destructive"
       });
       return;
     }
-    if (amount > balance) {
+    if (amountInCoins > balance) {
       toast({
         title: "Insufficient Balance",
-        description: "You don't have enough balance for this withdrawal",
+        description: "You don't have enough coins for this withdrawal",
         variant: "destructive"
       });
       return;
     }
-    onWithdraw(amount);
+    onWithdraw(amountInCoins);
     setWithdrawAmount("");
     toast({
       title: "Withdrawal Requested",
-      description: `Withdrawal of ₹${amount} has been requested`,
+      description: `Withdrawal of ₹${amountInRupees} (${amountInCoins} coins) has been requested`,
     });
   };
 
@@ -69,12 +77,12 @@ export function WalletCard({ balance, upiId, onUpiUpdate, onWithdraw }: WalletCa
           </div>
           My Wallet
         </CardTitle>
-        <CardDescription>Manage your earnings and withdrawals</CardDescription>
+        <CardDescription>Manage your earnings and withdrawals (100 coins = ₹1)</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Balance Display */}
         <div className="text-center p-6 bg-gradient-success rounded-lg text-white">
-          <div className="text-3xl font-bold">₹{balance.toFixed(2)}</div>
+          <div className="text-3xl font-bold">₹{balanceInRupees.toFixed(2)}</div>
           <div className="text-success-foreground/80">Available Balance</div>
           <Badge variant="secondary" className="mt-2 bg-white/20 text-white border-white/30">
             {balance} Coins
@@ -105,28 +113,29 @@ export function WalletCard({ balance, upiId, onUpiUpdate, onWithdraw }: WalletCa
 
         {/* Withdrawal Section */}
         <div className="space-y-3">
-          <Label htmlFor="withdrawAmount">Withdraw Amount (Min: ₹50)</Label>
+          <Label htmlFor="withdrawAmount">Withdraw Amount in ₹ (Min: ₹{minWithdrawalInRupees})</Label>
           <div className="flex gap-2">
             <Input
               id="withdrawAmount"
               type="number"
               value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value)}
-              placeholder="Enter amount"
-              min="50"
-              max={balance}
+              placeholder="Enter amount in ₹"
+              min={minWithdrawalInRupees}
+              max={balanceInRupees}
+              step="0.01"
               className="flex-1"
             />
             <Button 
               onClick={handleWithdraw} 
-              disabled={!withdrawAmount || parseFloat(withdrawAmount) < 50 || parseFloat(withdrawAmount) > balance}
+              disabled={!withdrawAmount || parseFloat(withdrawAmount) < minWithdrawalInRupees || parseFloat(withdrawAmount) > balanceInRupees}
               className="bg-gradient-primary hover:opacity-90"
             >
               Withdraw
             </Button>
           </div>
           <div className="text-xs text-muted-foreground">
-            Withdrawals are processed within 24-48 hours
+            Withdrawals are processed within 24-48 hours. You have {balance} coins (₹{balanceInRupees.toFixed(2)})
           </div>
         </div>
       </CardContent>

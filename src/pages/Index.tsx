@@ -113,7 +113,7 @@ const Index = () => {
     
     let newUser: User;
     if (existingUser) {
-      // Returning user - load their data
+      // Returning user - load their data (balance is stored in coins)
       newUser = {
         email,
         balance: existingUser.totalEarnings,
@@ -167,6 +167,7 @@ const Index = () => {
 
   const handleTaskComplete = (taskId: string, reward: number) => {
     if (currentUser) {
+      // Reward is now in coins (e.g., 200 coins for what was ₹2)
       const newBalance = currentUser.balance + reward;
       updateUser({ balance: newBalance });
       
@@ -209,12 +210,13 @@ const Index = () => {
     }
   };
 
-  const handleWithdraw = (amount: number) => {
+  const handleWithdraw = (amountInCoins: number) => {
     if (currentUser) {
+      const amountInRupees = amountInCoins / 100;
       const newRequest: WithdrawalRequest = {
         id: Date.now().toString(),
         userEmail: currentUser.email,
-        amount,
+        amount: amountInRupees, // Store withdrawal amount in rupees for display
         upiId: currentUser.upiId,
         requestDate: new Date().toISOString().split('T')[0],
         status: "pending"
@@ -222,12 +224,12 @@ const Index = () => {
       
       const updatedWithdrawals = [newRequest, ...withdrawalRequests];
       setWithdrawalRequests(updatedWithdrawals);
-      updateUser({ balance: currentUser.balance - amount });
+      updateUser({ balance: currentUser.balance - amountInCoins });
       
       // Update user balance in localStorage
       const updatedUsers = users.map(user => 
         user.email === currentUser.email 
-          ? { ...user, totalEarnings: currentUser.balance - amount }
+          ? { ...user, totalEarnings: currentUser.balance - amountInCoins }
           : user
       );
       setUsers(updatedUsers);
@@ -286,9 +288,9 @@ const Index = () => {
     });
   };
 
-  const handleWithdrawalAmountChange = (amount: number) => {
-    setWithdrawalAmount(amount);
-    localStorage.setItem('easyEarnWithdrawalAmount', amount.toString());
+  const handleWithdrawalAmountChange = (amountInCoins: number) => {
+    setWithdrawalAmount(amountInCoins);
+    localStorage.setItem('easyEarnWithdrawalAmount', amountInCoins.toString());
   };
 
   const handleAddNotification = (notification: Omit<Notification, "id">) => {
@@ -333,6 +335,9 @@ const Index = () => {
         />
       );
     } else {
+      // Convert balance to rupees for display (100 coins = 1₹)
+      const balanceInRupees = currentUser.balance / 100;
+      
       // Public User Dashboard with improved mobile responsiveness
       return (
         <div className="min-h-screen bg-background">
@@ -354,7 +359,7 @@ const Index = () => {
                 <div className="flex items-center gap-2 md:gap-4">
                   <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs md:text-sm">
                     <Coins className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                    ₹{currentUser.balance}
+                    ₹{balanceInRupees.toFixed(2)}
                   </Badge>
                   <Button 
                     variant="outline" 
@@ -392,7 +397,7 @@ const Index = () => {
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
                     <h2 className="text-xl md:text-2xl font-bold">Available Tasks</h2>
-                    <p className="text-sm md:text-base text-muted-foreground">Complete tasks to earn money</p>
+                    <p className="text-sm md:text-base text-muted-foreground">Complete tasks to earn coins (100 coins = ₹1)</p>
                   </div>
                   <Badge variant="outline" className="text-success border-success text-xs md:text-sm">
                     {getAvailableTasksForUser(tasks, currentUser.email).length} tasks available
@@ -504,8 +509,8 @@ const Index = () => {
                   <Coins className="w-3 h-3 md:w-4 md:h-4 text-white" />
                 </div>
                 <div>
-                  <h4 className="text-sm md:text-base font-semibold">Earn ₹2 per task</h4>
-                  <p className="text-xs md:text-sm text-muted-foreground">Complete simple 2-minute tasks</p>
+                  <h4 className="text-sm md:text-base font-semibold">Earn 200 coins per task</h4>
+                  <p className="text-xs md:text-sm text-muted-foreground">Complete simple 2-minute tasks (100 coins = ₹1)</p>
                 </div>
               </div>
             </div>
@@ -517,7 +522,7 @@ const Index = () => {
                 </div>
                 <div>
                   <h4 className="text-sm md:text-base font-semibold">Minimum withdrawal ₹50</h4>
-                  <p className="text-xs md:text-sm text-muted-foreground">Quick UPI payments</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">Quick UPI payments (5000 coins)</p>
                 </div>
               </div>
             </div>

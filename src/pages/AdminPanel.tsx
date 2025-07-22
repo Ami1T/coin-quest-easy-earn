@@ -83,14 +83,14 @@ export function AdminPanel({
 }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Real-time stats calculated from actual data
+  // Real-time stats calculated from actual data with coin conversion
   const stats = {
     activeUsers: users.filter(user => user.isActive).length,
     totalTasks: tasks.length,
     totalTransactions: users.reduce((sum, user) => sum + user.tasksCompleted, 0),
     totalWithdrawals: withdrawalRequests
       .filter(req => req.status === "approved")
-      .reduce((sum, req) => sum + req.amount, 0)
+      .reduce((sum, req) => sum + req.amount, 0) // This is already in rupees
   };
 
   const pendingRequestsCount = withdrawalRequests.filter(req => req.status === "pending").length;
@@ -109,7 +109,7 @@ export function AdminPanel({
                 <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                   Admin Panel
                 </h1>
-                <p className="text-sm text-muted-foreground">Easy Earn Management Dashboard</p>
+                <p className="text-sm text-muted-foreground">Easy Earn Management Dashboard (100 coins = ₹1)</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -149,7 +149,7 @@ export function AdminPanel({
             </TabsTrigger>
             <TabsTrigger value="upload" className="flex items-center gap-2">
               <Upload className="w-4 h-4" />
-              Upload
+              Task Management
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
@@ -160,7 +160,7 @@ export function AdminPanel({
           <TabsContent value="overview" className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold mb-2">User Response Overview</h2>
-              <p className="text-muted-foreground">Monitor active users, traffic, and transactions</p>
+              <p className="text-muted-foreground">Monitor active users, traffic, and transactions (100 coins = ₹1)</p>
             </div>
             <AdminStats
               activeUsers={stats.activeUsers}
@@ -198,7 +198,7 @@ export function AdminPanel({
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold mb-2">Payment Management</h2>
-                <p className="text-muted-foreground">View and manage withdrawal requests with UPI details</p>
+                <p className="text-muted-foreground">View and manage withdrawal requests with UPI details (amounts in ₹)</p>
               </div>
               <PaymentsSection
                 withdrawalRequests={withdrawalRequests}
@@ -212,7 +212,7 @@ export function AdminPanel({
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold mb-2">User Database</h2>
-                <p className="text-muted-foreground">View all registered users and their activity</p>
+                <p className="text-muted-foreground">View all registered users and their activity (earnings in coins)</p>
               </div>
               <UserDataSection users={users} />
             </div>
@@ -222,7 +222,7 @@ export function AdminPanel({
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold mb-2">Task Management</h2>
-                <p className="text-muted-foreground">Upload new tasks and content for users</p>
+                <p className="text-muted-foreground">Upload new tasks and content for users (rewards in coins: 100 coins = ₹1)</p>
               </div>
               <UploadSection onAddTask={onAddTask} />
               <TaskManagement 

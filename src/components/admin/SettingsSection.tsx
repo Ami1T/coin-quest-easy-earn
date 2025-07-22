@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,25 +30,29 @@ export function SettingsSection({
   onAddNotification, 
   onDeleteNotification 
 }: SettingsSectionProps) {
-  const [newWithdrawalAmount, setNewWithdrawalAmount] = useState(withdrawalAmount.toString());
+  // Convert withdrawal amount to rupees for display (stored as coins)
+  const withdrawalAmountInRupees = withdrawalAmount / 100;
+  const [newWithdrawalAmount, setNewWithdrawalAmount] = useState(withdrawalAmountInRupees.toString());
   const [notificationTitle, setNotificationTitle] = useState("");
   const [notificationMessage, setNotificationMessage] = useState("");
   const { toast } = useToast();
 
   const handleUpdateWithdrawalAmount = () => {
-    const amount = parseInt(newWithdrawalAmount);
-    if (amount <= 0) {
+    const amountInRupees = parseFloat(newWithdrawalAmount);
+    if (amountInRupees <= 0) {
       toast({
         title: "Invalid Amount",
-        description: "Withdrawal amount must be greater than 0",
+        description: "Withdrawal amount must be greater than ₹0",
         variant: "destructive"
       });
       return;
     }
-    onWithdrawalAmountChange(amount);
+    // Convert rupees to coins for storage
+    const amountInCoins = amountInRupees * 100;
+    onWithdrawalAmountChange(amountInCoins);
     toast({
       title: "Settings Updated",
-      description: `Minimum withdrawal amount set to ₹${amount}`,
+      description: `Minimum withdrawal amount set to ₹${amountInRupees} (${amountInCoins} coins)`,
     });
   };
 
@@ -89,7 +94,7 @@ export function SettingsSection({
             Withdrawal Settings
           </CardTitle>
           <CardDescription>
-            Configure minimum withdrawal amount for users
+            Configure minimum withdrawal amount for users (100 coins = ₹1)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -102,7 +107,8 @@ export function SettingsSection({
                 value={newWithdrawalAmount}
                 onChange={(e) => setNewWithdrawalAmount(e.target.value)}
                 placeholder="50"
-                min="1"
+                min="0.01"
+                step="0.01"
               />
             </div>
             <Button onClick={handleUpdateWithdrawalAmount}>
@@ -110,7 +116,7 @@ export function SettingsSection({
             </Button>
           </div>
           <div className="text-sm text-muted-foreground">
-            Current minimum withdrawal: ₹{withdrawalAmount}
+            Current minimum withdrawal: ₹{withdrawalAmountInRupees} ({withdrawalAmount} coins)
           </div>
         </CardContent>
       </Card>
