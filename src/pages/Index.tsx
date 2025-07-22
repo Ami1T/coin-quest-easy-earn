@@ -11,8 +11,9 @@ import { NotificationModal } from "@/components/ui/NotificationModal";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Coins, Shield, LogOut } from "lucide-react";
+import { Coins, Shield, LogOut, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 // Mock data - in a real app, this would come from a backend
 interface Task {
@@ -61,10 +62,11 @@ interface Notification {
 }
 
 const Index = () => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { currentUser, isLoading, login, logout, updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState<"public" | "admin">("public");
   const [userNavTab, setUserNavTab] = useState<"home" | "wallet" | "refer">("home");
   const [isLogin, setIsLogin] = useState(true);
+  
   // Load data from localStorage
   const loadFromStorage = () => {
     const storedTasks = localStorage.getItem('easyEarnTasks');
@@ -90,12 +92,17 @@ const Index = () => {
   const [withdrawalAmount, setWithdrawalAmount] = useState<number>(savedData.withdrawalAmount);
   const [dismissedNotifications, setDismissedNotifications] = useState<string[]>([]);
 
-  // Save to localStorage whenever data changes
-  const saveToStorage = (tasksData: Task[], usersData: UserData[], withdrawalsData: WithdrawalRequest[]) => {
-    localStorage.setItem('easyEarnTasks', JSON.stringify(tasksData));
-    localStorage.setItem('easyEarnUsers', JSON.stringify(usersData));
-    localStorage.setItem('easyEarnWithdrawals', JSON.stringify(withdrawalsData));
-  };
+  // Show loading spinner while checking for persisted session
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const { toast } = useToast();
 
@@ -141,7 +148,7 @@ const Index = () => {
       }
     }
     
-    setCurrentUser(newUser);
+    login(newUser);
     
     toast({
       title: "Login Successful! 🎉",
@@ -150,7 +157,7 @@ const Index = () => {
   };
 
   const handleLogout = () => {
-    setCurrentUser(null);
+    logout();
     toast({
       title: "Logged Out",
       description: "You have been successfully logged out",
@@ -160,7 +167,7 @@ const Index = () => {
   const handleTaskComplete = (taskId: string, reward: number) => {
     if (currentUser) {
       const newBalance = currentUser.balance + reward;
-      setCurrentUser(prev => prev ? { ...prev, balance: newBalance } : null);
+      updateUser({ balance: newBalance });
       
       // Update user data in localStorage with completed task
       const updatedUsers = users.map(user => 
@@ -188,7 +195,7 @@ const Index = () => {
 
   const handleUpiUpdate = (upiId: string) => {
     if (currentUser) {
-      setCurrentUser(prev => prev ? { ...prev, upiId } : null);
+      updateUser({ upiId });
       
       // Update user data in localStorage
       const updatedUsers = users.map(user => 
@@ -214,7 +221,7 @@ const Index = () => {
       
       const updatedWithdrawals = [newRequest, ...withdrawalRequests];
       setWithdrawalRequests(updatedWithdrawals);
-      setCurrentUser(prev => prev ? { ...prev, balance: prev.balance - amount } : null);
+      updateUser({ balance: currentUser.balance - amount });
       
       // Update user balance in localStorage
       const updatedUsers = users.map(user => 
@@ -325,42 +332,49 @@ const Index = () => {
         />
       );
     } else {
-      // Public User Dashboard with new navigation
+      // Public User Dashboard with improved mobile responsiveness
       return (
         <div className="min-h-screen bg-background">
-          {/* Header */}
-          <header className="bg-gradient-primary text-white py-6">
+          {/* Mobile-optimized Header */}
+          <header className="bg-gradient-primary text-white py-4 md:py-6">
             <div className="container mx-auto px-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                    <Coins className="w-6 h-6 text-primary" />
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-2 md:gap-3">
+                  <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-full flex items-center justify-center">
+                    <Coins className="w-4 h-4 md:w-6 md:h-6 text-primary" />
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold">Easy Earn</h1>
-                    <p className="text-sm text-primary-foreground/80">Welcome, {currentUser.email}</p>
+                    <h1 className="text-xl md:text-2xl font-bold">Easy Earn</h1>
+                    <p className="text-xs md:text-sm text-primary-foreground/80 truncate max-w-[200px] md:max-w-none">
+                      Welcome, {currentUser.email}
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                    <Coins className="w-4 h-4 mr-1" />
+                <div className="flex items-center gap-2 md:gap-4">
+                  <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs md:text-sm">
+                    <Coins className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                     ₹{currentUser.balance}
                   </Badge>
-                  <Button variant="outline" onClick={handleLogout} className="border-white/20 text-white hover:bg-white/10">
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Logout
+                  <Button 
+                    variant="outline" 
+                    onClick={handleLogout} 
+                    className="border-white/20 text-white hover:bg-white/10 text-xs md:text-sm px-2 md:px-4"
+                    size="sm"
+                  >
+                    <LogOut className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                    <span className="hidden sm:inline">Logout</span>
                   </Button>
                 </div>
               </div>
             </div>
           </header>
 
-          {/* Navigation Bar */}
-          <div className="container mx-auto px-4 py-4">
+          {/* Mobile-optimized Navigation Bar */}
+          <div className="container mx-auto px-4 py-3 md:py-4">
             <Navigation 
               activeTab={userNavTab} 
               onTabChange={setUserNavTab}
-              className="max-w-md mx-auto"
+              className="max-w-full md:max-w-md mx-auto"
             />
           </div>
 
@@ -370,16 +384,16 @@ const Index = () => {
             onDismiss={handleDismissNotification}
           />
 
-          {/* Content based on active tab */}
-          <div className="container mx-auto px-4 pb-8">
+          {/* Mobile-optimized Content */}
+          <div className="container mx-auto px-4 pb-6 md:pb-8">
             {userNavTab === "home" && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
+              <div className="space-y-4 md:space-y-6">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
-                    <h2 className="text-2xl font-bold">Available Tasks</h2>
-                    <p className="text-muted-foreground">Complete tasks to earn money</p>
+                    <h2 className="text-xl md:text-2xl font-bold">Available Tasks</h2>
+                    <p className="text-sm md:text-base text-muted-foreground">Complete tasks to earn money</p>
                   </div>
-                  <Badge variant="outline" className="text-success border-success">
+                  <Badge variant="outline" className="text-success border-success text-xs md:text-sm">
                     {getAvailableTasksForUser(tasks, currentUser.email).length} tasks available
                   </Badge>
                 </div>
@@ -388,12 +402,12 @@ const Index = () => {
                   const availableTasks = getAvailableTasksForUser(tasks, currentUser.email);
                   return availableTasks.length === 0 ? (
                     <Card className="shadow-card">
-                      <CardContent className="flex flex-col items-center justify-center py-12">
-                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-                          <Coins className="w-8 h-8 text-muted-foreground" />
+                      <CardContent className="flex flex-col items-center justify-center py-8 md:py-12">
+                        <div className="w-12 h-12 md:w-16 md:h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                          <Coins className="w-6 h-6 md:w-8 md:h-8 text-muted-foreground" />
                         </div>
-                        <h3 className="text-lg font-semibold mb-2">No Tasks Available</h3>
-                        <p className="text-muted-foreground text-center">
+                        <h3 className="text-base md:text-lg font-semibold mb-2">No Tasks Available</h3>
+                        <p className="text-sm md:text-base text-muted-foreground text-center px-4">
                           {tasks.length === 0 
                             ? "Check back later for new earning opportunities!" 
                             : "You've completed all available tasks! Check back later for new ones."}
@@ -401,7 +415,7 @@ const Index = () => {
                       </CardContent>
                     </Card>
                   ) : (
-                    <div className="grid gap-6 max-w-4xl mx-auto">
+                    <div className="grid gap-4 md:gap-6 max-w-4xl mx-auto">
                       {availableTasks.map((task) => (
                         <TaskCard
                           key={task.id}
@@ -416,7 +430,7 @@ const Index = () => {
             )}
 
             {userNavTab === "wallet" && (
-              <div className="max-w-md mx-auto">
+              <div className="max-w-full md:max-w-md mx-auto">
                 <WalletCard
                   balance={currentUser.balance}
                   upiId={currentUser.upiId}
@@ -427,7 +441,7 @@ const Index = () => {
             )}
 
             {userNavTab === "refer" && (
-              <div className="max-w-4xl mx-auto">
+              <div className="max-w-full md:max-w-4xl mx-auto">
                 <ReferralSection
                   userEmail={currentUser.email}
                   referralCount={0}
@@ -441,35 +455,35 @@ const Index = () => {
     }
   }
 
-  // Landing page with login/register
+  // Mobile-optimized Landing page with login/register
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Header */}
-      <header className="bg-gradient-primary text-white py-8">
+      {/* Mobile-optimized Hero Header */}
+      <header className="bg-gradient-primary text-white py-6 md:py-8">
         <div className="container mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-              <Coins className="w-7 h-7 text-primary" />
+          <div className="flex items-center justify-center gap-2 md:gap-3 mb-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center">
+              <Coins className="w-5 h-5 md:w-7 md:h-7 text-primary" />
             </div>
-            <h1 className="text-4xl font-bold">Easy Earn</h1>
+            <h1 className="text-2xl md:text-4xl font-bold">Easy Earn</h1>
           </div>
-          <p className="text-xl text-primary-foreground/90 max-w-2xl mx-auto">
+          <p className="text-base md:text-xl text-primary-foreground/90 max-w-2xl mx-auto px-4">
             Complete simple tasks and earn money instantly. Join thousands of users earning daily rewards!
           </p>
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-md mx-auto space-y-8">
+      {/* Mobile-optimized Main Content */}
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="max-w-full md:max-w-md mx-auto space-y-6 md:space-y-8">
           {/* Navigation */}
           <div className="text-center space-y-4">
-            <h2 className="text-2xl font-bold">Welcome to Easy Earn</h2>
-            <p className="text-muted-foreground">Choose your access type to continue</p>
+            <h2 className="text-xl md:text-2xl font-bold">Welcome to Easy Earn</h2>
+            <p className="text-sm md:text-base text-muted-foreground px-4">Choose your access type to continue</p>
             <LoginNavigation 
               activeTab={activeTab} 
               onTabChange={setActiveTab}
-              className="max-w-xs mx-auto"
+              className="max-w-full md:max-w-xs mx-auto"
             />
           </div>
 
@@ -481,28 +495,28 @@ const Index = () => {
             isLogin={isLogin}
           />
 
-          {/* Features */}
-          <div className="grid grid-cols-1 gap-4 mt-8">
-            <div className="bg-card p-4 rounded-lg shadow-card">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-coin rounded-full flex items-center justify-center">
-                  <Coins className="w-4 h-4 text-white" />
+          {/* Mobile-optimized Features */}
+          <div className="grid grid-cols-1 gap-3 md:gap-4 mt-6 md:mt-8">
+            <div className="bg-card p-3 md:p-4 rounded-lg shadow-card">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-coin rounded-full flex items-center justify-center">
+                  <Coins className="w-3 h-3 md:w-4 md:h-4 text-white" />
                 </div>
                 <div>
-                  <h4 className="font-semibold">Earn ₹2 per task</h4>
-                  <p className="text-sm text-muted-foreground">Complete simple 2-minute tasks</p>
+                  <h4 className="text-sm md:text-base font-semibold">Earn ₹2 per task</h4>
+                  <p className="text-xs md:text-sm text-muted-foreground">Complete simple 2-minute tasks</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-card p-4 rounded-lg shadow-card">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-success rounded-full flex items-center justify-center">
-                  <Shield className="w-4 h-4 text-white" />
+            <div className="bg-card p-3 md:p-4 rounded-lg shadow-card">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-success rounded-full flex items-center justify-center">
+                  <Shield className="w-3 h-3 md:w-4 md:h-4 text-white" />
                 </div>
                 <div>
-                  <h4 className="font-semibold">Minimum withdrawal ₹50</h4>
-                  <p className="text-sm text-muted-foreground">Quick UPI payments</p>
+                  <h4 className="text-sm md:text-base font-semibold">Minimum withdrawal ₹50</h4>
+                  <p className="text-xs md:text-sm text-muted-foreground">Quick UPI payments</p>
                 </div>
               </div>
             </div>
