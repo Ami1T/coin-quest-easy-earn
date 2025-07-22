@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Coins, Shield, LogOut, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { saveToStorage } from "@/utils/storage";
 
 // Mock data - in a real app, this would come from a backend
 interface Task {
@@ -63,6 +64,8 @@ interface Notification {
 
 const Index = () => {
   const { currentUser, isLoading, login, logout, updateUser } = useAuth();
+  const { toast } = useToast();
+
   const [activeTab, setActiveTab] = useState<"public" | "admin">("public");
   const [userNavTab, setUserNavTab] = useState<"home" | "wallet" | "refer">("home");
   const [isLogin, setIsLogin] = useState(true);
@@ -103,8 +106,6 @@ const Index = () => {
       </div>
     );
   }
-
-  const { toast } = useToast();
 
   const handleLogin = (email: string, password: string, userType: "public" | "admin") => {
     // Check if user exists in localStorage
