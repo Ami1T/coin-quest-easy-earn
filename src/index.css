@@ -58,6 +58,7 @@ All colors MUST be HSL.
     --gradient-primary: linear-gradient(135deg, hsl(var(--trust-blue)), hsl(220 60% 35%));
     --gradient-coin: linear-gradient(135deg, hsl(var(--coin-gold)), hsl(var(--coin-gold-dark)));
     --gradient-success: linear-gradient(135deg, hsl(var(--earning-green)), hsl(120 40% 35%));
+    --gradient-warning: linear-gradient(135deg, hsl(var(--warning)), hsl(25 80% 45%));
     --shadow-card: 0 4px 12px hsl(220 15% 15% / 0.1);
     --shadow-coin: 0 8px 20px hsl(45 95% 50% / 0.3);
 

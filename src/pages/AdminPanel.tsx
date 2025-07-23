@@ -63,6 +63,8 @@ interface AdminPanelProps {
   onWithdrawalAmountChange: (amount: number) => void;
   onAddNotification: (notification: Omit<Notification, "id">) => void;
   onDeleteNotification: (id: string) => void;
+  adminEmail?: string;
+  onAdminCredentialsChange?: (email: string, password: string) => void;
 }
 
 export function AdminPanel({ 
@@ -79,7 +81,9 @@ export function AdminPanel({
   notifications,
   onWithdrawalAmountChange,
   onAddNotification,
-  onDeleteNotification
+  onDeleteNotification,
+  adminEmail,
+  onAdminCredentialsChange
 }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -273,6 +277,8 @@ export function AdminPanel({
                 onWithdrawalAmountChange={onWithdrawalAmountChange}
                 onAddNotification={onAddNotification}
                 onDeleteNotification={onDeleteNotification}
+                adminEmail={adminEmail}
+                onAdminCredentialsChange={onAdminCredentialsChange}
               />
             </div>
           )}

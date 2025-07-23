@@ -8,10 +8,11 @@ import { WalletCard } from "@/components/dashboard/WalletCard";
 import { TaskCard } from "@/components/dashboard/TaskCard";
 import { ReferralSection } from "@/components/dashboard/ReferralSection";
 import { NotificationModal } from "@/components/ui/NotificationModal";
+import { ProfileModal } from "@/components/ui/ProfileModal";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Coins, Shield, LogOut, Loader2 } from "lucide-react";
+import { Coins, Shield, LogOut, Loader2, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { saveToStorage } from "@/utils/storage";
@@ -94,6 +95,15 @@ const Index = () => {
   const [notifications, setNotifications] = useState<Notification[]>(savedData.notifications);
   const [withdrawalAmount, setWithdrawalAmount] = useState<number>(savedData.withdrawalAmount);
   const [dismissedNotifications, setDismissedNotifications] = useState<string[]>([]);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  
+  // Load admin credentials from localStorage
+  const loadAdminCredentials = () => {
+    const storedCredentials = localStorage.getItem('easyEarnAdminCredentials');
+    return storedCredentials ? JSON.parse(storedCredentials) : { email: "admin@easyearn.com", password: "admin123" };
+  };
+  
+  const [adminCredentials, setAdminCredentials] = useState(loadAdminCredentials());
 
   // Show loading spinner while checking for persisted session
   if (isLoading) {
@@ -313,6 +323,26 @@ const Index = () => {
     setDismissedNotifications(prev => [...prev, id]);
   };
 
+  const handleAdminCredentialsChange = (email: string, password: string) => {
+    setAdminCredentials({ email, password });
+    localStorage.setItem('easyEarnAdminCredentials', JSON.stringify({ email, password }));
+  };
+
+  const handleProfileUpdate = (email: string, upiId: string) => {
+    if (currentUser) {
+      updateUser({ email, upiId });
+      
+      // Update user data in localStorage
+      const updatedUsers = users.map(user => 
+        user.email === currentUser.email 
+          ? { ...user, email, upiId }
+          : user
+      );
+      setUsers(updatedUsers);
+      saveToStorage(tasks, updatedUsers, withdrawalRequests);
+    }
+  };
+
   // If user is logged in, show appropriate dashboard
   if (currentUser) {
     if (currentUser.type === "admin") {
@@ -332,6 +362,8 @@ const Index = () => {
           onWithdrawalAmountChange={handleWithdrawalAmountChange}
           onAddNotification={handleAddNotification}
           onDeleteNotification={handleDeleteNotification}
+          adminEmail={adminCredentials.email}
+          onAdminCredentialsChange={handleAdminCredentialsChange}
         />
       );
     } else {
@@ -363,6 +395,15 @@ const Index = () => {
                   </Badge>
                   <Button 
                     variant="outline" 
+                    onClick={() => setShowProfileModal(true)} 
+                    className="border-white/20 text-white hover:bg-white/10 text-xs md:text-sm px-2 md:px-4"
+                    size="sm"
+                  >
+                    <User className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                    <span className="hidden sm:inline">Profile</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
                     onClick={handleLogout} 
                     className="border-white/20 text-white hover:bg-white/10 text-xs md:text-sm px-2 md:px-4"
                     size="sm"
@@ -388,6 +429,15 @@ const Index = () => {
           <NotificationModal
             notifications={notifications.filter(n => !dismissedNotifications.includes(n.id))}
             onDismiss={handleDismissNotification}
+          />
+
+          {/* Profile Modal */}
+          <ProfileModal
+            isOpen={showProfileModal}
+            onClose={() => setShowProfileModal(false)}
+            user={currentUser}
+            userData={users.find(u => u.email === currentUser.email)}
+            onUpdateProfile={handleProfileUpdate}
           />
 
           {/* Mobile-optimized Content */}

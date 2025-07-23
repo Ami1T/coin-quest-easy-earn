@@ -21,6 +21,8 @@ interface SettingsSectionProps {
   onWithdrawalAmountChange: (amount: number) => void;
   onAddNotification: (notification: Omit<Notification, "id">) => void;
   onDeleteNotification: (id: string) => void;
+  adminEmail?: string;
+  onAdminCredentialsChange?: (email: string, password: string) => void;
 }
 
 export function SettingsSection({ 
@@ -28,13 +30,17 @@ export function SettingsSection({
   notifications, 
   onWithdrawalAmountChange, 
   onAddNotification, 
-  onDeleteNotification 
+  onDeleteNotification,
+  adminEmail = "",
+  onAdminCredentialsChange
 }: SettingsSectionProps) {
   // Convert withdrawal amount to rupees for display (stored as coins)
   const withdrawalAmountInRupees = withdrawalAmount / 100;
   const [newWithdrawalAmount, setNewWithdrawalAmount] = useState(withdrawalAmountInRupees.toString());
   const [notificationTitle, setNotificationTitle] = useState("");
   const [notificationMessage, setNotificationMessage] = useState("");
+  const [newAdminEmail, setNewAdminEmail] = useState(adminEmail);
+  const [newAdminPassword, setNewAdminPassword] = useState("");
   const { toast } = useToast();
 
   const handleUpdateWithdrawalAmount = () => {
@@ -82,6 +88,35 @@ export function SettingsSection({
     });
   };
 
+  const handleAdminCredentialsUpdate = () => {
+    if (!newAdminEmail.trim()) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!newAdminPassword.trim()) {
+      toast({
+        title: "Invalid Password",
+        description: "Please enter a new password",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (onAdminCredentialsChange) {
+      onAdminCredentialsChange(newAdminEmail.trim(), newAdminPassword.trim());
+      setNewAdminPassword("");
+      toast({
+        title: "Admin Credentials Updated! 🎉",
+        description: "Email and password have been successfully updated",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Withdrawal Amount Settings */}
@@ -117,6 +152,55 @@ export function SettingsSection({
           </div>
           <div className="text-sm text-muted-foreground">
             Current minimum withdrawal: ₹{withdrawalAmountInRupees} ({withdrawalAmount} coins)
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Admin Credentials Settings */}
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-warning rounded-full flex items-center justify-center">
+              <Settings className="w-4 h-4 text-white" />
+            </div>
+            Admin Credentials
+          </CardTitle>
+          <CardDescription>
+            Update admin email and password
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="adminEmail">Admin Email</Label>
+              <Input
+                id="adminEmail"
+                type="email"
+                value={newAdminEmail}
+                onChange={(e) => setNewAdminEmail(e.target.value)}
+                placeholder="admin@example.com"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="adminPassword">New Password</Label>
+              <Input
+                id="adminPassword"
+                type="password"
+                value={newAdminPassword}
+                onChange={(e) => setNewAdminPassword(e.target.value)}
+                placeholder="Enter new password"
+              />
+            </div>
+
+            <Button 
+              onClick={handleAdminCredentialsUpdate}
+              className="w-full bg-gradient-warning hover:opacity-90"
+              size="lg"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Update Admin Credentials
+            </Button>
           </div>
         </CardContent>
       </Card>
