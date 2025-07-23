@@ -127,14 +127,23 @@ export function AdminPanel({
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
+      {/* Navigation Bar */}
+      <nav className="bg-card border-b shadow-sm">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center gap-2 py-3 overflow-x-auto">
+            <Button
+              variant={activeTab === "overview" ? "default" : "ghost"}
+              onClick={() => setActiveTab("overview")}
+              className="flex items-center gap-2 min-w-fit"
+            >
               <TrendingUp className="w-4 h-4" />
               Overview
-            </TabsTrigger>
-            <TabsTrigger value="payments" className="flex items-center gap-2">
+            </Button>
+            <Button
+              variant={activeTab === "payments" ? "default" : "ghost"}
+              onClick={() => setActiveTab("payments")}
+              className="flex items-center gap-2 min-w-fit relative"
+            >
               <DollarSign className="w-4 h-4" />
               Payments
               {pendingRequestsCount > 0 && (
@@ -142,22 +151,40 @@ export function AdminPanel({
                   {pendingRequestsCount}
                 </Badge>
               )}
-            </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2">
+            </Button>
+            <Button
+              variant={activeTab === "users" ? "default" : "ghost"}
+              onClick={() => setActiveTab("users")}
+              className="flex items-center gap-2 min-w-fit"
+            >
               <Users className="w-4 h-4" />
               User Data
-            </TabsTrigger>
-            <TabsTrigger value="upload" className="flex items-center gap-2">
+            </Button>
+            <Button
+              variant={activeTab === "upload" ? "default" : "ghost"}
+              onClick={() => setActiveTab("upload")}
+              className="flex items-center gap-2 min-w-fit"
+            >
               <Upload className="w-4 h-4" />
               Task Management
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
+            </Button>
+            <Button
+              variant={activeTab === "settings" ? "default" : "ghost"}
+              onClick={() => setActiveTab("settings")}
+              className="flex items-center gap-2 min-w-fit"
+            >
               <Settings className="w-4 h-4" />
               Settings
-            </TabsTrigger>
-          </TabsList>
+            </Button>
+          </div>
+        </div>
+      </nav>
 
-          <TabsContent value="overview" className="space-y-6">
+      <div className="container mx-auto px-4 py-8">
+        <div className="space-y-6">
+
+          {activeTab === "overview" && (
+            <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold mb-2">User Response Overview</h2>
               <p className="text-muted-foreground">Monitor active users, traffic, and transactions (100 coins = ₹1)</p>
@@ -192,9 +219,10 @@ export function AdminPanel({
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+            </div>
+          )}
 
-          <TabsContent value="payments">
+          {activeTab === "payments" && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold mb-2">Payment Management</h2>
@@ -206,9 +234,9 @@ export function AdminPanel({
                 onRejectWithdrawal={onRejectWithdrawal}
               />
             </div>
-          </TabsContent>
+          )}
 
-          <TabsContent value="users">
+          {activeTab === "users" && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold mb-2">User Database</h2>
@@ -216,9 +244,9 @@ export function AdminPanel({
               </div>
               <UserDataSection users={users} />
             </div>
-          </TabsContent>
+          )}
 
-          <TabsContent value="upload">
+          {activeTab === "upload" && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold mb-2">Task Management</h2>
@@ -231,9 +259,9 @@ export function AdminPanel({
                 onDeleteTask={onDeleteTask}
               />
             </div>
-          </TabsContent>
+          )}
 
-          <TabsContent value="settings">
+          {activeTab === "settings" && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold mb-2">Settings</h2>
@@ -247,8 +275,8 @@ export function AdminPanel({
                 onDeleteNotification={onDeleteNotification}
               />
             </div>
-          </TabsContent>
-        </Tabs>
+          )}
+        </div>
       </div>
     </div>
   );

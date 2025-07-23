@@ -16,6 +16,7 @@ export function LoginForm({ userType, onLogin, onToggleForm, isLogin }: LoginFor
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showAdminFields, setShowAdminFields] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -67,68 +68,80 @@ export function LoginForm({ userType, onLogin, onToggleForm, isLogin }: LoginFor
         <CardDescription>{getCardDescription()}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={userType === "admin" ? "ka6515034@gmail.com" : "Enter your email"}
-              required
-              className="transition-all duration-200 focus:shadow-coin/20"
-            />
+        {userType === "admin" && !showAdminFields ? (
+          <div className="text-center space-y-4">
+            <p className="text-muted-foreground">Click to access admin panel</p>
+            <Button 
+              onClick={() => setShowAdminFields(true)}
+              className="w-full bg-gradient-primary hover:opacity-90"
+            >
+              Access Admin Panel
+            </Button>
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={userType === "admin" ? "Amazing" : "Enter your password"}
-              required
-              className="transition-all duration-200 focus:shadow-coin/20"
-            />
-          </div>
-
-          {!isLogin && userType === "public" && (
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm your password"
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={userType === "admin" ? "ka6515034@gmail.com" : "Enter your email"}
                 required
                 className="transition-all duration-200 focus:shadow-coin/20"
               />
             </div>
-          )}
-
-          <Button 
-            type="submit" 
-            className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200 shadow-card"
-          >
-            {isLogin ? "Sign In" : "Create Account"}
-          </Button>
-
-          {userType === "public" && (
-            <div className="text-center">
-              <Button
-                type="button"
-                variant="link"
-                onClick={onToggleForm}
-                className="text-primary hover:text-primary/80"
-              >
-                {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-              </Button>
+            
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={userType === "admin" ? "Amazing" : "Enter your password"}
+                required
+                className="transition-all duration-200 focus:shadow-coin/20"
+              />
             </div>
-          )}
-        </form>
+
+            {!isLogin && userType === "public" && (
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm your password"
+                  required
+                  className="transition-all duration-200 focus:shadow-coin/20"
+                />
+              </div>
+            )}
+
+            <Button 
+              type="submit" 
+              className="w-full bg-gradient-primary hover:opacity-90 transition-all duration-200 shadow-card"
+            >
+              {isLogin ? "Sign In" : "Create Account"}
+            </Button>
+
+            {userType === "public" && (
+              <div className="text-center">
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={onToggleForm}
+                  className="text-primary hover:text-primary/80"
+                >
+                  {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+                </Button>
+              </div>
+            )}
+          </form>
+        )}
       </CardContent>
     </Card>
   );

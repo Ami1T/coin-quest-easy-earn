@@ -137,7 +137,7 @@ export function UploadSection({ onAddTask }: UploadSectionProps) {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="reward">Reward (Coins) *</Label>
+              <Label htmlFor="reward">Reward (Coins) * - Set Unlimited</Label>
               <Input
                 id="reward"
                 type="number"
@@ -145,9 +145,11 @@ export function UploadSection({ onAddTask }: UploadSectionProps) {
                 onChange={(e) => setReward(e.target.value)}
                 placeholder="2"
                 min="1"
-                max="100"
                 required
               />
+              <div className="text-xs text-muted-foreground">
+                You can set any amount of coins as reward (100 coins = ₹1)
+              </div>
             </div>
           </div>
 
