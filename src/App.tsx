@@ -7,7 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
-  <TooltipProvider>
+  <>
     <Toaster />
     <Sonner />
     <BrowserRouter>
@@ -17,7 +17,7 @@ const App = () => (
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
-  </TooltipProvider>
+  </>
 );
 
 export default App;
