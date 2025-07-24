@@ -80,11 +80,6 @@ export function WalletCard({ balance, upiId, onUpiUpdate, onWithdraw }: WalletCa
         <CardDescription>Manage your earnings and withdrawals</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Conversion Rate Info */}
-        <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20">
-          <div className="text-lg font-semibold text-primary">100 coins = ₹1</div>
-          <div className="text-sm text-muted-foreground">Current conversion rate</div>
-        </div>
 
         {/* Balance Display */}
         <div className="text-center p-6 bg-gradient-success rounded-lg text-white">
@@ -119,7 +114,7 @@ export function WalletCard({ balance, upiId, onUpiUpdate, onWithdraw }: WalletCa
 
         {/* Withdrawal Section */}
         <div className="space-y-3">
-          <Label htmlFor="withdrawAmount">Withdraw Amount in ₹ (Min: ₹50)</Label>
+          <Label htmlFor="withdrawAmount">Withdraw Amount in ₹</Label>
           <div className="flex gap-2">
             <Input
               id="withdrawAmount"

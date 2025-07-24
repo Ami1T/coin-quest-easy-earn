@@ -7,6 +7,7 @@ import { LoginNavigation } from "@/components/ui/login-navigation";
 import { WalletCard } from "@/components/dashboard/WalletCard";
 import { TaskCard } from "@/components/dashboard/TaskCard";
 import { ReferralSection } from "@/components/dashboard/ReferralSection";
+import { TransactionHistory } from "@/components/dashboard/TransactionHistory";
 import { NotificationModal } from "@/components/ui/NotificationModal";
 import { ProfileModal } from "@/components/ui/ProfileModal";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -421,6 +422,9 @@ const Index = () => {
             <Navigation 
               activeTab={userNavTab} 
               onTabChange={setUserNavTab}
+              onProfileClick={() => setShowProfileModal(true)}
+              onLogout={handleLogout}
+              onSettingsClick={() => {}} // Settings functionality can be added later
               className="max-w-full md:max-w-md mx-auto"
             />
           </div>
@@ -447,7 +451,7 @@ const Index = () => {
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
                     <h2 className="text-xl md:text-2xl font-bold">Available Tasks</h2>
-                    <p className="text-sm md:text-base text-muted-foreground">Complete tasks to earn coins (100 coins = ₹1)</p>
+                    <p className="text-sm md:text-base text-muted-foreground">Complete tasks to earn coins</p>
                   </div>
                   <Badge variant="outline" className="text-success border-success text-xs md:text-sm">
                     {getAvailableTasksForUser(tasks, currentUser.email).length} tasks available
@@ -486,13 +490,14 @@ const Index = () => {
             )}
 
             {userNavTab === "wallet" && (
-              <div className="max-w-full md:max-w-md mx-auto">
+              <div className="max-w-full md:max-w-md mx-auto space-y-6">
                 <WalletCard
                   balance={currentUser.balance}
                   upiId={currentUser.upiId}
                   onUpiUpdate={handleUpiUpdate}
                   onWithdraw={handleWithdraw}
                 />
+                <TransactionHistory userEmail={currentUser.email} />
               </div>
             )}
 
@@ -560,7 +565,7 @@ const Index = () => {
                 </div>
                 <div>
                   <h4 className="text-sm md:text-base font-semibold">Earn 200 coins per task</h4>
-                  <p className="text-xs md:text-sm text-muted-foreground">Complete simple 2-minute tasks (100 coins = ₹1)</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">Complete simple 2-minute tasks</p>
                 </div>
               </div>
             </div>

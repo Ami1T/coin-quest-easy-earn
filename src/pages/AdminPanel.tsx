@@ -113,7 +113,7 @@ export function AdminPanel({
                 <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                   Admin Panel
                 </h1>
-                <p className="text-sm text-muted-foreground">Easy Earn Management Dashboard (100 coins = ₹1)</p>
+                <p className="text-sm text-muted-foreground">Easy Earn Management Dashboard</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -191,7 +191,7 @@ export function AdminPanel({
             <div className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold mb-2">User Response Overview</h2>
-              <p className="text-muted-foreground">Monitor active users, traffic, and transactions (100 coins = ₹1)</p>
+              <p className="text-muted-foreground">Monitor active users, traffic, and transactions</p>
             </div>
             <AdminStats
               activeUsers={stats.activeUsers}
@@ -254,7 +254,7 @@ export function AdminPanel({
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold mb-2">Task Management</h2>
-                <p className="text-muted-foreground">Upload new tasks and content for users (rewards in coins: 100 coins = ₹1)</p>
+                <p className="text-muted-foreground">Upload new tasks and content for users (rewards in coins)</p>
               </div>
               <UploadSection onAddTask={onAddTask} />
               <TaskManagement 

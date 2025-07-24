@@ -129,7 +129,7 @@ export function SettingsSection({
             Withdrawal Settings
           </CardTitle>
           <CardDescription>
-            Configure minimum withdrawal amount for users (100 coins = ₹1)
+            Configure minimum withdrawal amount for users
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

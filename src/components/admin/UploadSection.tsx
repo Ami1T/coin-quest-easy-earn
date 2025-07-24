@@ -148,7 +148,7 @@ export function UploadSection({ onAddTask }: UploadSectionProps) {
                 required
               />
               <div className="text-xs text-muted-foreground">
-                You can set any amount of coins as reward (100 coins = ₹1)
+                You can set any amount of coins as reward
               </div>
             </div>
           </div>
