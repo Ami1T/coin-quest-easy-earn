@@ -4,6 +4,7 @@ import { PublicDashboard } from "./PublicDashboard";
 import { AdminPanel } from "./AdminPanel";
 import { Navigation } from "@/components/ui/navigation";
 import { LoginNavigation } from "@/components/ui/login-navigation";
+import { SettingsDropdown } from "@/components/ui/settings-dropdown";
 import { WalletCard } from "@/components/dashboard/WalletCard";
 import { TaskCard } from "@/components/dashboard/TaskCard";
 import { ReferralSection } from "@/components/dashboard/ReferralSection";
@@ -394,24 +395,10 @@ const Index = () => {
                     <Coins className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                     ₹{balanceInRupees.toFixed(2)}
                   </Badge>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setShowProfileModal(true)} 
-                    className="border-white/20 text-white hover:bg-white/10 text-xs md:text-sm px-2 md:px-4"
-                    size="sm"
-                  >
-                    <User className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                    <span className="hidden sm:inline">Profile</span>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={handleLogout} 
-                    className="border-white/20 text-white hover:bg-white/10 text-xs md:text-sm px-2 md:px-4"
-                    size="sm"
-                  >
-                    <LogOut className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                    <span className="hidden sm:inline">Logout</span>
-                  </Button>
+                  <SettingsDropdown 
+                    onProfileClick={() => setShowProfileModal(true)}
+                    onLogout={handleLogout}
+                  />
                 </div>
               </div>
             </div>
@@ -422,8 +409,6 @@ const Index = () => {
             <Navigation 
               activeTab={userNavTab} 
               onTabChange={setUserNavTab}
-              onProfileClick={() => setShowProfileModal(true)}
-              onLogout={handleLogout}
               onSettingsClick={() => {}} // Settings functionality can be added later
               className="max-w-full md:max-w-md mx-auto"
             />
