@@ -25,12 +25,26 @@ interface UserData {
   tasksCompleted: number;
   isActive: boolean;
   lastActive: string;
+  // Profile fields
+  name?: string;
+  gender?: string;
+  dateOfBirth?: string;
+  state?: string;
+  profilePicture?: string;
 }
 
 interface EditProfileProps {
   user: User;
   userData?: UserData;
-  onUpdateProfile: (email: string, upiId: string) => void;
+  onUpdateProfile: (profileData: {
+    email: string;
+    upiId: string;
+    name?: string;
+    gender?: string;
+    dateOfBirth?: string;
+    state?: string;
+    profilePicture?: string;
+  }) => void;
 }
 
 export function EditProfile({ user, userData, onUpdateProfile }: EditProfileProps) {
@@ -38,11 +52,11 @@ export function EditProfile({ user, userData, onUpdateProfile }: EditProfileProp
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
-    profilePicture: "",
-    name: user.email.split('@')[0],
-    gender: "",
-    dateOfBirth: "",
-    state: "",
+    profilePicture: userData?.profilePicture || "",
+    name: userData?.name || user.email.split('@')[0],
+    gender: userData?.gender || "",
+    dateOfBirth: userData?.dateOfBirth || "",
+    state: userData?.state || "",
     userId: generateUserId(user.email, userData?.joinDate),
     email: user.email,
     upiId: user.upiId
@@ -72,7 +86,15 @@ export function EditProfile({ user, userData, onUpdateProfile }: EditProfileProp
   const handleSubmit = () => {
     // Check if User ID is unique (for now, we'll assume it's always unique based on email+date)
     if (formData.email && formData.upiId) {
-      onUpdateProfile(formData.email, formData.upiId);
+      onUpdateProfile({
+        email: formData.email,
+        upiId: formData.upiId,
+        name: formData.name,
+        gender: formData.gender,
+        dateOfBirth: formData.dateOfBirth,
+        state: formData.state,
+        profilePicture: formData.profilePicture
+      });
       toast({
         title: "Profile Updated",
         description: "Your profile has been successfully updated",

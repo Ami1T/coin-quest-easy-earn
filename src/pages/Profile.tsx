@@ -21,6 +21,12 @@ interface UserData {
   tasksCompleted: number;
   isActive: boolean;
   lastActive: string;
+  // Profile fields
+  name?: string;
+  gender?: string;
+  dateOfBirth?: string;
+  state?: string;
+  profilePicture?: string;
 }
 
 interface ProfileProps {
@@ -101,8 +107,11 @@ export function Profile({ user, userData }: ProfileProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <h2 className="text-xl font-semibold mb-2">
-                    {user.email.split('@')[0]}
+                    {userData?.name || user.email.split('@')[0]}
                   </h2>
+                  {userData?.gender && (
+                    <p className="text-sm text-muted-foreground">{userData.gender}</p>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-muted-foreground">User ID</p>
@@ -153,6 +162,26 @@ export function Profile({ user, userData }: ProfileProps) {
                       Tasks Completed
                     </div>
                     <p className="font-medium">{userData.tasksCompleted}</p>
+                  </div>
+                )}
+                
+                {userData?.dateOfBirth && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="w-4 h-4" />
+                      Date of Birth
+                    </div>
+                    <p className="font-medium">{new Date(userData.dateOfBirth).toLocaleDateString()}</p>
+                  </div>
+                )}
+                
+                {userData?.state && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <User className="w-4 h-4" />
+                      State
+                    </div>
+                    <p className="font-medium">{userData.state.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</p>
                   </div>
                 )}
               </div>

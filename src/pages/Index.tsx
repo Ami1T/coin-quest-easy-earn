@@ -60,6 +60,12 @@ interface UserData {
   completedTaskIds: string[];
   isActive: boolean;
   lastActive: string;
+  // Profile fields
+  name?: string;
+  gender?: string;
+  dateOfBirth?: string;
+  state?: string;
+  profilePicture?: string;
 }
 
 interface Notification {
@@ -335,14 +341,32 @@ const Index = () => {
     localStorage.setItem('easyEarnAdminCredentials', JSON.stringify({ email, password }));
   };
 
-  const handleProfileUpdate = (email: string, upiId: string) => {
+  const handleProfileUpdate = (profileData: {
+    email: string;
+    upiId: string;
+    name?: string;
+    gender?: string;
+    dateOfBirth?: string;
+    state?: string;
+    profilePicture?: string;
+  }) => {
     if (currentUser) {
-      updateUser({ email, upiId });
+      updateUser({ email: profileData.email, upiId: profileData.upiId });
       
-      // Update user data in localStorage
+      // Update user data in localStorage with all profile fields
       const updatedUsers = users.map(user => 
         user.email === currentUser.email 
-          ? { ...user, email, upiId }
+          ? { 
+              ...user, 
+              email: profileData.email, 
+              upiId: profileData.upiId,
+              name: profileData.name,
+              gender: profileData.gender,
+              dateOfBirth: profileData.dateOfBirth,
+              state: profileData.state,
+              profilePicture: profileData.profilePicture,
+              lastActive: new Date().toISOString()
+            }
           : user
       );
       setUsers(updatedUsers);

@@ -24,6 +24,12 @@ interface UserData {
   completedTaskIds: string[];
   isActive: boolean;
   lastActive: string;
+  // Profile fields
+  name?: string;
+  gender?: string;
+  dateOfBirth?: string;
+  state?: string;
+  profilePicture?: string;
 }
 
 interface ProfileModalProps {
@@ -31,7 +37,15 @@ interface ProfileModalProps {
   onClose: () => void;
   user: User;
   userData?: UserData;
-  onUpdateProfile: (email: string, upiId: string) => void;
+  onUpdateProfile: (profileData: {
+    email: string;
+    upiId: string;
+    name?: string;
+    gender?: string;
+    dateOfBirth?: string;
+    state?: string;
+    profilePicture?: string;
+  }) => void;
 }
 
 export function ProfileModal({ isOpen, onClose, user, userData, onUpdateProfile }: ProfileModalProps) {
@@ -52,7 +66,10 @@ export function ProfileModal({ isOpen, onClose, user, userData, onUpdateProfile 
       return;
     }
 
-    onUpdateProfile(editEmail.trim(), editUpiId.trim());
+    onUpdateProfile({
+      email: editEmail.trim(),
+      upiId: editUpiId.trim()
+    });
     setIsEditing(false);
     toast({
       title: "Profile Updated! 🎉",
