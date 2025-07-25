@@ -14,12 +14,12 @@ export function SettingsDropdown({ onProfileClick, onLogout, className }: Settin
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button 
-          variant="outline" 
-          className={`border-white/20 text-white hover:bg-white/10 text-xs md:text-sm px-2 md:px-4 ${className}`}
+          variant="ghost" 
+          className={`text-xs sm:text-sm px-2 sm:px-4 transition-all duration-200 ${className}`}
           size="sm"
         >
-          <Settings className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-          <span className="hidden sm:inline">Settings</span>
+          <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 transition-transform duration-200" />
+          <span className="hidden xs:inline sm:inline">Settings</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">

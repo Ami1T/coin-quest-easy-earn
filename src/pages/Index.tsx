@@ -390,15 +390,11 @@ const Index = () => {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 md:gap-4">
+                <div className="flex items-center">
                   <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs md:text-sm">
                     <Coins className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                     ₹{balanceInRupees.toFixed(2)}
                   </Badge>
-                  <SettingsDropdown 
-                    onProfileClick={() => setShowProfileModal(true)}
-                    onLogout={handleLogout}
-                  />
                 </div>
               </div>
             </div>
@@ -409,8 +405,9 @@ const Index = () => {
             <Navigation 
               activeTab={userNavTab} 
               onTabChange={setUserNavTab}
-              onSettingsClick={() => {}} // Settings functionality can be added later
-              className="max-w-full md:max-w-md mx-auto"
+              onProfileClick={() => setShowProfileModal(true)}
+              onLogout={handleLogout}
+              className="max-w-full md:max-w-lg mx-auto"
             />
           </div>
 
