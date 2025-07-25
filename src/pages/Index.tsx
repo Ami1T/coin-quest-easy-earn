@@ -1,7 +1,11 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { PublicDashboard } from "./PublicDashboard";
 import { AdminPanel } from "./AdminPanel";
+import { Settings } from "./Settings";
+import { Profile } from "./Profile";
+import { EditProfile } from "./EditProfile";
 import { Navigation } from "@/components/ui/navigation";
 import { LoginNavigation } from "@/components/ui/login-navigation";
 import { SettingsDropdown } from "@/components/ui/settings-dropdown";
@@ -68,6 +72,7 @@ interface Notification {
 const Index = () => {
   const { currentUser, isLoading, login, logout, updateUser } = useAuth();
   const { toast } = useToast();
+  const location = useLocation();
 
   const [activeTab, setActiveTab] = useState<"public" | "admin">("public");
   const [userNavTab, setUserNavTab] = useState<"home" | "wallet" | "refer">("home");
@@ -369,6 +374,29 @@ const Index = () => {
         />
       );
     } else {
+      // Check current route for logged in users
+      if (location.pathname === "/settings") {
+        return <Settings onLogout={handleLogout} />;
+      }
+      
+      if (location.pathname === "/profile") {
+        return (
+          <Profile 
+            user={currentUser} 
+            userData={users.find(u => u.email === currentUser.email)} 
+          />
+        );
+      }
+      
+      if (location.pathname === "/edit-profile") {
+        return (
+          <EditProfile 
+            user={currentUser} 
+            userData={users.find(u => u.email === currentUser.email)}
+            onUpdateProfile={handleProfileUpdate}
+          />
+        );
+      }
       // Convert balance to rupees for display (100 coins = 1₹)
       const balanceInRupees = currentUser.balance / 100;
       
