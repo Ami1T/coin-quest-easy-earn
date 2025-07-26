@@ -44,7 +44,7 @@ export function Settings({ onLogout }: SettingsProps) {
 
       {/* Content */}
       <div className="container mx-auto px-4 py-6">
-        <div className="max-w-md mx-auto space-y-4">
+        <div className="space-y-4">
           <Card className="shadow-card">
             <CardHeader>
               <CardTitle className="text-center">Account Settings</CardTitle>

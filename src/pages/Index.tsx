@@ -404,10 +404,11 @@ const Index = () => {
       }
       
       if (location.pathname === "/profile") {
+        const currentUserData = users.find(u => u.email === currentUser.email);
         return (
           <Profile 
             user={currentUser} 
-            userData={users.find(u => u.email === currentUser.email)} 
+            userData={currentUserData} 
           />
         );
       }
